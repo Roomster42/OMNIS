@@ -1,1 +1,543 @@
 <!-- pagina di istruzioni per la configurazione del dispositivo apple ad OMINS -->
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attivazione Kit</title>
+<meta name="theme-color" content="#4a5d23">
+<style>
+  :root {
+    --bg: #f3f2ee; --card: #ffffff; --ink: #1d1f1c; --muted: #6b6e66; --line: #d9d8d1;
+    --accent: #4a5d23; --accent-ink: #ffffff; --accent-soft: #e6ead9;
+    --off: #a3a693; --off-soft: #ecebe5; --glow: rgba(110, 140, 50, .45);
+    --warn-bg: #f6efdc; --warn-ink: #6e5212; --warn-line: #e3d3a6;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #131512; --card: #1d201b; --ink: #e8e8e2; --muted: #9a9d93; --line: #30342c;
+      --accent: #9bb35a; --accent-ink: #131512; --accent-soft: #283020;
+      --off: #5a5e52; --off-soft: #24271f; --glow: rgba(155, 179, 90, .5);
+      --warn-bg: #2b2616; --warn-ink: #e0c47a; --warn-line: #4a3f1f; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 14px; }
+  .brand { font: 600 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 22px; line-height: 1.2; margin: 2px 0 0; font-weight: 650; }
+  .link-btn { font: 12px var(--mono); color: var(--muted); background: none; border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 10px; cursor: pointer; }
+  [hidden] { display: none !important; }
+
+  /* ---- bivio ---- */
+  .lead { color: var(--muted); margin: 0 0 18px; }
+  .choice { display: grid; gap: 12px; }
+  .path { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; cursor: pointer;
+    background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 16px; font: inherit; }
+  .path:hover { border-color: var(--accent); }
+  .path .pic { flex: 0 0 52px; height: 52px; border-radius: 12px; display: grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent); }
+  .path b { display: block; font-size: 17px; }
+  .path span { color: var(--muted); font-size: 14px; }
+  .path .tag { margin-left: auto; font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; white-space: nowrap; }
+
+  /* ---- avanzamento ---- */
+  .progress { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  .progress-top { display: flex; justify-content: space-between; align-items: baseline; font: 12px var(--mono);
+    text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .progress-top b { color: var(--ink); font-size: 14px; }
+  .bar { height: 8px; background: var(--off-soft); border-radius: 999px; overflow: hidden; margin: 10px 0 12px; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 999px; transition: width .5s ease; }
+  .pips { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .pip { aspect-ratio: 1; max-height: 44px; border-radius: 10px; display: grid; place-items: center;
+    color: var(--off); background: var(--off-soft); transition: color .3s, background .3s, box-shadow .3s; }
+  .pip svg { width: 60%; height: 60%; }
+  .pip.on { color: var(--accent); background: var(--accent-soft); }
+  .pip.done { color: var(--accent-ink); background: var(--accent); box-shadow: 0 0 10px var(--glow); }
+
+  /* ---- obiettivi ---- */
+  .obj { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+    transition: border-color .3s, box-shadow .3s, opacity .3s; }
+  .obj-head { display: flex; align-items: center; gap: 14px; padding: 14px; width: 100%; background: none; border: 0;
+    color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  .obj.locked { opacity: .55; }
+  .obj.locked .obj-head { cursor: default; }
+  .obj.active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .icon { position: relative; flex: 0 0 56px; height: 56px; border-radius: 14px; display: grid; place-items: center;
+    color: var(--off); background: var(--off-soft); transition: color .35s, background .35s, filter .35s; }
+  .icon svg { width: 36px; height: 36px; }
+  .obj.active .icon { color: var(--accent); background: var(--accent-soft); filter: drop-shadow(0 0 6px var(--glow)); }
+  .obj.done .icon { color: var(--accent); background: var(--accent-soft); }
+  .badge { position: absolute; right: -5px; bottom: -5px; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-ink); display: none; place-items: center; border: 2px solid var(--card); }
+  .badge svg { width: 12px; height: 12px; }
+  .obj.done .badge { display: grid; }
+  .code { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .obj-title { font-size: 17px; font-weight: 650; line-height: 1.25; }
+  .state { margin-left: auto; font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); white-space: nowrap; }
+  .obj.active .state { color: var(--accent); }
+  .obj-body { padding: 0 14px 16px; }
+  .brief { margin: 0 0 12px; color: var(--muted); font-size: 15px; }
+  .tasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .task { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid var(--line); border-radius: 10px;
+    cursor: pointer; transition: border-color .2s, background .2s; -webkit-tap-highlight-color: transparent; }
+  .task input { position: absolute; opacity: 0; pointer-events: none; }
+  .box { flex: 0 0 22px; height: 22px; border-radius: 6px; border: 2px solid var(--off); display: grid; place-items: center;
+    color: transparent; transition: all .2s; margin-top: 1px; }
+  .box svg { width: 13px; height: 13px; }
+  .task.checked { border-color: var(--accent); background: var(--accent-soft); }
+  .task.checked .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .task-text { font-size: 15px; }
+  .task-text b { font-weight: 650; }
+  .path-ui { font: 600 13px var(--mono); background: var(--off-soft); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+  .store { display: inline-block; margin-top: 8px; font: 600 14px system-ui, sans-serif; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 8px; padding: 6px 12px; text-decoration: none; }
+  .alert { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; font-size: 14px;
+    background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); }
+  .alert b { font-weight: 700; }
+  details.help { margin-top: 10px; font-size: 14px; color: var(--muted); }
+  details.help summary { cursor: pointer; font: 12px var(--mono); text-transform: uppercase; letter-spacing: .08em; padding: 6px 0; }
+  details.help ul { margin: 6px 0 0; padding-left: 18px; }
+  details.help li { margin: 4px 0; }
+  .complete { margin-top: 14px; width: 100%; font: 650 16px system-ui, sans-serif; padding: 14px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
+  .complete:disabled { background: var(--off-soft); color: var(--muted); border-color: var(--line); cursor: not-allowed; }
+
+  /* ---- traguardo ---- */
+  .victory { text-align: center; padding: 28px 18px; border-radius: 16px; background: var(--card);
+    border: 1px solid var(--accent); box-shadow: 0 0 0 3px var(--accent-soft), 0 0 30px var(--glow); margin-top: 14px; }
+  .victory .big { width: 96px; height: 96px; margin: 0 auto 10px; color: var(--accent); filter: drop-shadow(0 0 12px var(--glow)); }
+  .victory h2 { margin: 6px 0 4px; font-size: 24px; letter-spacing: .02em; }
+  .victory p { margin: 0 auto; max-width: 380px; color: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) {
+    .victory .big { animation: pulse 2.2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: .85; } }
+    .obj.active .icon { animation: breathe 2.6s ease-in-out infinite; }
+    @keyframes breathe { 0%, 100% { filter: drop-shadow(0 0 3px var(--glow)); } 50% { filter: drop-shadow(0 0 9px var(--glow)); } }
+  }
+  .dossier { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; }
+  .dossier .code { margin-bottom: 4px; }
+  .dossier .kvs { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; font-size: 14px; }
+  .dossier .kvs span { color: var(--muted); }
+  .dossier .kvs b { font-weight: 650; overflow-wrap: anywhere; }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line); vertical-align: -1px; margin-right: 6px; }
+  .dossier details { margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .dossier summary { cursor: pointer; font: 12px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+  .keybox { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .keybox code { flex: 1; min-width: 0; font: 12px var(--mono); background: var(--off-soft); padding: 6px 8px; border-radius: 6px; overflow-wrap: anywhere; color: var(--ink); }
+  .soon { background: var(--card); border: 1px dashed var(--line); border-radius: 14px; padding: 18px; color: var(--muted); }
+  .soon ol { margin: 10px 0 0; padding-left: 20px; }
+  footer { margin-top: 22px; text-align: center; font: 12px var(--mono); color: var(--muted); }
+</style>
+</head>
+<body>
+<!-- Set di icone: stesso tratto (2.2), estremità arrotondate, monocromatiche (currentColor). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-pack" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 14v-2.5a5 5 0 0 1 10 0V14"/>
+      <rect x="11" y="14" width="26" height="29" rx="7"/>
+      <path d="M11 24h26"/>
+      <rect x="17" y="29" width="14" height="9" rx="2.5"/>
+      <path d="M24 29v3"/>
+    </symbol>
+    <symbol id="i-antenna" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="24" cy="18" r="3"/>
+      <path d="M24 21v20M17 42h14"/>
+      <path d="M17 11a10 10 0 0 0 0 14M31 11a10 10 0 0 1 0 14"/>
+      <path d="M11.5 6a17.5 17.5 0 0 0 0 24M36.5 6a17.5 17.5 0 0 1 0 24"/>
+    </symbol>
+    <symbol id="i-link" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <g transform="rotate(-35 24 24)">
+        <rect x="4" y="17" width="22" height="14" rx="7"/>
+        <rect x="22" y="17" width="22" height="14" rx="7"/>
+      </g>
+      <path d="M9 9l2.5 2.5M39 39l-2.5-2.5M6 17h3M42 31h-3"/>
+    </symbol>
+    <symbol id="i-crate" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 5l16 8v20l-16 9-16-9V13z"/>
+      <path d="M8 13l16 8 16-8M24 21v21"/>
+      <path d="M16 9l16 8v6"/>
+    </symbol>
+    <symbol id="i-badge" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 4l15 5.5V21c0 10-6.4 17.3-15 22-8.6-4.7-15-12-15-22V9.5z"/>
+      <path d="M16.5 19l7.5 5 7.5-5M16.5 26.5l7.5 5 7.5-5"/>
+    </symbol>
+    <symbol id="i-target" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="24" cy="24" r="14"/>
+      <circle cx="24" cy="24" r="4"/>
+      <path d="M24 3v9M24 36v9M3 24h9M36 24h9"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12.5l4.5 4.5L19 7.5"/>
+    </symbol>
+    <symbol id="i-phone" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="13" y="4" width="22" height="40" rx="5"/>
+      <path d="M21 9h6M22 39h4"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">Kit ATAK · Attivazione</div>
+      <h1 id="title">Briefing di missione</h1>
+    </div>
+    <button class="link-btn" id="btn-back" hidden>Cambia telefono</button>
+  </header>
+
+  <!-- Dati del giocatore letti dal link (solo se presenti) -->
+  <section id="dossier" class="dossier" hidden></section>
+
+  <!-- Bivio -->
+  <section id="screen-choice">
+    <p class="lead">Sei obiettivi ti separano dal primo contatto radio con la tua squadra. Per iniziare, indica il telefono che userai sul campo.</p>
+    <div class="choice">
+      <button class="path" data-path="ios">
+        <span class="pic"><svg width="30" height="30"><use href="#i-phone"/></svg></span>
+        <span><b>iPhone</b><span>Con l'app iTAK</span></span>
+        <span class="tag">6 obiettivi</span>
+      </button>
+      <button class="path" data-path="android">
+        <span class="pic"><svg width="30" height="30"><use href="#i-phone"/></svg></span>
+        <span><b>Android</b><span>Con l'app ATAK</span></span>
+        <span class="tag">In preparazione</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Missione -->
+  <section id="screen-mission" hidden>
+    <div class="progress" aria-live="polite">
+      <div class="progress-top"><span id="progress-label">Avanzamento</span><b id="progress-count">0 / 6</b></div>
+      <div class="bar"><i id="progress-bar"></i></div>
+      <div class="pips" id="pips"></div>
+    </div>
+    <div id="objectives"></div>
+    <div id="victory" class="victory" hidden>
+      <svg class="big"><use href="#i-target"/></svg>
+      <div class="code">Obiettivo finale raggiunto</div>
+      <h2>Contatto stabilito</h2>
+      <p>Missione compiuta. Il tuo nodo è in rete e la squadra ti vede sulla mappa. Prima di ogni partita basta accendere il nodo e aprire Meshtastic e iTAK.</p>
+      <button class="link-btn" id="btn-reset" style="margin-top:16px">Ricomincia la guida</button>
+    </div>
+  </section>
+
+  <!-- Tracker: non serve il telefono -->
+  <section id="screen-tracker" hidden>
+    <div class="obj done" style="opacity:1">
+      <div class="obj-head" style="cursor:default">
+        <span class="icon"><svg aria-hidden="true"><use href="#i-target"/></svg><span class="badge"><svg aria-hidden="true"><use href="#i-check"/></svg></span></span>
+        <span><span class="code">Tracker</span><br><span class="obj-title">Nessuna attivazione necessaria</span></span>
+      </div>
+      <div class="obj-body">
+        <p class="brief">Il tracker è già configurato per la tua squadra e non usa il telefono: trasmette da solo la tua posizione.</p>
+        <ul class="tasks">
+          <li><span class="task checked"><span class="box"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span class="task-text">Ricaricalo con il cavo USB-C tenendolo <b>acceso</b>.</span></span></li>
+          <li><span class="task checked"><span class="box"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span class="task-text">Prima della partita accendilo e indossalo con l'antenna verso l'alto.</span></span></li>
+          <li><span class="task checked"><span class="box"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span class="task-text">Dopo un paio di minuti compari sulla mappa dei compagni.</span></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Android: struttura pronta, contenuti da definire -->
+  <section id="screen-android" hidden>
+    <div class="soon">
+      <div class="code">Percorso Android · In preparazione</div>
+      <p>La guida per Android con ATAK è in arrivo. Gli obiettivi previsti:</p>
+      <ol>
+        <li>Equipaggiamento: ATAK e plugin Meshtastic</li>
+        <li>Aggancio al nodo</li>
+        <li>Attivazione del plugin</li>
+        <li>Identità</li>
+        <li>Contatto stabilito</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>Problemi? Contatta chi ti ha fornito il kit.</footer>
+</div>
+
+<script>
+// ---------- percorsi: i contenuti sono dati, l'interfaccia li disegna ----------
+const LINKS = {
+  meshtasticIos: "https://apps.apple.com/app/meshtastic/id1586432531",
+  itak: "https://apps.apple.com/app/id1561656396",
+};
+const ui = (t) => `<span class="path-ui">${t}</span>`;
+const esc = (x) => String(x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// ---------- dati del giocatore nel link (dopo il #) ----------
+// Formato comune con manuale.html (sorgente: src/kitlink.js), tenerli allineati:
+//   #v=1&n=<nominativo>&c=<colore ATAK>&r=<ruolo>&ch=<canale>&k=<chiave base64url>&t=atak|tracker
+const TEAM_COLORS = {
+  White: ["Bianco", "#f4f4f4"], Yellow: ["Giallo", "#f2d11b"], Orange: ["Arancione", "#f28c1b"],
+  Magenta: ["Magenta", "#d61bd6"], Red: ["Rosso", "#d62b2b"], Maroon: ["Bordeaux", "#7a1f2b"],
+  Purple: ["Viola", "#7b3fb8"], DarkBlue: ["Blu scuro", "#1f2f8a"], Blue: ["Blu", "#2a6fdb"],
+  Cyan: ["Ciano", "#1bc7d6"], Teal: ["Verde acqua", "#178a80"], Green: ["Verde", "#3aa23a"],
+  DarkGreen: ["Verde scuro", "#1f5a24"], Brown: ["Marrone", "#7a5230"],
+};
+const ROLES = {
+  TeamMember: "Team Member", TeamLead: "Team Lead", HQ: "HQ", Sniper: "Sniper", Medic: "Medic",
+  ForwardObserver: "Forward Observer", RTO: "RTO", K9: "K9",
+};
+function b64urlToBytes(x) {
+  try { return Uint8Array.from(atob(x.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((x.length + 3) % 4)), (c) => c.charCodeAt(0)); }
+  catch { return null; }
+}
+function decodeKit(hash) {
+  const raw = (hash || "").replace(/^#/, "");
+  if (!raw) return null;
+  const p = new URLSearchParams(raw);
+  if (p.get("v") !== "1") return null;
+  const d = { n: p.get("n") || "", c: p.get("c") || "", r: p.get("r") || "TeamMember", ch: p.get("ch") || "", k: p.get("k") || "", t: p.get("t") || "atak" };
+  const key = b64urlToBytes(d.k);
+  if (!d.n || !d.ch || !TEAM_COLORS[d.c] || !ROLES[d.r] || !["atak", "tracker"].includes(d.t) || !key || (key.length !== 32 && key.length !== 16)) return null;
+  d.keyB64 = btoa(String.fromCharCode(...key));
+  return d;
+}
+const KIT = decodeKit(location.hash);
+// Testi che si personalizzano quando il link porta i dati del giocatore.
+const T = KIT ? {
+  channel: `il canale principale si chiama <b>${esc(KIT.ch)}</b>`,
+  pick: `scegli il canale <b>${esc(KIT.ch)}</b>`,
+  callsign: `imposta il nominativo <b>${esc(KIT.n)}</b> (callsign)`,
+  colorRole: `Scegli il colore squadra <b>${TEAM_COLORS[KIT.c][0]}</b> (${KIT.c}) e il ruolo <b>${ROLES[KIT.r]}</b>.`,
+} : {
+  channel: "il canale principale ha il nome della tua squadra",
+  pick: "scegli il <b>canale della tua squadra</b>",
+  callsign: "imposta il tuo <b>nominativo</b> (callsign)",
+  colorRole: "Scegli il <b>colore squadra</b> e il <b>ruolo</b> concordati con il team.",
+};
+
+const PATHS = {
+  ios: {
+    title: "Missione iPhone",
+    objectives: [
+      {
+        icon: "i-pack", code: "Obiettivo 1", title: "Equipaggiamento",
+        brief: "Due app dall'App Store. Sono il tuo equipaggiamento radio.",
+        tasks: [
+          `<b>Meshtastic</b>: parla con il nodo via Bluetooth.<br><a class="store" href="${LINKS.meshtasticIos}" target="_blank" rel="noopener">Apri l'App Store</a>`,
+          `<b>iTAK</b>: la mappa tattica della squadra.<br><a class="store" href="${LINKS.itak}" target="_blank" rel="noopener">Apri l'App Store</a>`,
+        ],
+      },
+      {
+        icon: "i-antenna", code: "Obiettivo 2", title: "Aggancio al nodo",
+        brief: "Colleghi il telefono al tuo nodo radio. Il nodo accetta un solo telefono alla volta.",
+        tasks: [
+          "Accendi il nodo e tienilo vicino al telefono.",
+          `Apri <b>Meshtastic</b>, vai su ${ui("Connetti")} e tocca il tuo nodo nell'elenco.`,
+          "Inserisci il <b>PIN</b> quando iOS lo chiede: lo trovi sull'etichetta del kit o sul display del nodo.",
+          `In ${ui("Impostazioni → Canali")} ${T.channel}.`,
+        ],
+        help: [
+          "Il nodo non compare: spegnilo e riaccendilo, poi riprova. Se è collegato a un altro telefono, scollegalo da lì.",
+          "Il PIN viene rifiutato: in Impostazioni iOS → Bluetooth tocca la «i» accanto al nodo, scegli «Dissocia questo dispositivo» e ricollegalo dall'app.",
+        ],
+      },
+      {
+        icon: "i-link", code: "Obiettivo 3", title: "Ponte radio",
+        brief: "iTAK non parla direttamente con il nodo. È l'app Meshtastic a fare da ripetitore tra i due: ora lo accendi.",
+        tasks: [
+          `In Meshtastic apri ${ui("Impostazioni → TAK Server")}.`,
+          `Attiva ${ui("Enable TAK Server")}.`,
+          `Nel selettore del canale ${T.pick}.`,
+          "L'indicatore di stato mostra il server <b>attivo</b>.",
+        ],
+        alert: "<b>Non premere «Fix Channel»</b> se compare: cambierebbe la chiave del canale e usciresti dalla rete della tua squadra. Segnalalo a chi ti ha fornito il kit.",
+        help: [
+          "Il server resta in sola lettura: il canale non è configurato per il team. Contatta chi ti ha fornito il kit.",
+        ],
+      },
+      {
+        icon: "i-crate", code: "Obiettivo 4", title: "Trasferimento ordini",
+        brief: "Un pacchetto spiega a iTAK dove trovare il ponte radio. Lo esporti da Meshtastic e lo carichi in iTAK.",
+        tasks: [
+          `Nella schermata ${ui("TAK Server")} di Meshtastic esporta il <b>data package</b> e salvalo in <b>File</b>.`,
+          `Apri <b>iTAK</b> e vai su ${ui("Settings → Network → Servers")}.`,
+          `Tocca ${ui("+")}, scegli ${ui("Upload Server Package")} e seleziona il pacchetto salvato.`,
+          "Il server compare nell'elenco con l'indicatore di <b>connessione attiva</b>.",
+        ],
+        alert: "<b>Meshtastic deve restare aperta</b>, anche in secondo piano: se iOS la chiude, il ponte radio si spegne. Disattiva il Risparmio energetico durante la partita.",
+        help: [
+          "iTAK non si connette: torna su Meshtastic, controlla che il nodo sia collegato e il TAK Server attivo, poi riapri iTAK.",
+          "Non trovi il pacchetto: nell'app File cerca nella cartella di Meshtastic o tra i download recenti.",
+        ],
+      },
+      {
+        icon: "i-badge", code: "Obiettivo 5", title: "Identità",
+        brief: "Chi sei sulla mappa: nominativo, colore della squadra e ruolo.",
+        tasks: [
+          `In <b>iTAK</b>, nelle impostazioni, ${T.callsign}.`,
+          T.colorRole,
+          `In Meshtastic, ${ui("TAK Server → TAK Identity")}: stesso colore e stesso ruolo, poi salva.`,
+        ],
+      },
+      {
+        icon: "i-target", code: "Obiettivo finale", title: "Contatto stabilito",
+        brief: "Ultimo controllo: tu e la squadra sulla stessa mappa.",
+        tasks: [
+          "Sulla mappa di iTAK vedi il <b>tuo marker</b> nella tua posizione.",
+          "Vedi almeno un <b>compagno</b> (con il nodo acceso). Le posizioni possono impiegare un paio di minuti.",
+          "Invii un <b>messaggio di prova</b> nella chat di squadra e lo ricevi dall'altra parte.",
+        ],
+        help: [
+          "Non vedi i compagni: tutti i nodi della squadra devono avere lo stesso canale. Se un compagno ha una configurazione diversa non compare, senza errori: confrontate il nome del canale in Meshtastic.",
+          "Non vedi te stesso: controlla che iTAK abbia il permesso di usare la posizione.",
+        ],
+      },
+    ],
+  },
+};
+
+// ---------- stato (salvato solo su questo telefono, se il browser lo consente) ----------
+const KEY = "kit-attivazione-v1" + (KIT ? ":" + KIT.n + ":" + KIT.ch : "");
+let store = {};
+try { store = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch { store = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch {} };
+
+const $ = (id) => document.getElementById(id);
+const svg = (id, cls = "") => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+
+function progress(pathKey) {
+  if (!store[pathKey]) store[pathKey] = { done: 0, checks: {}, open: null };
+  return store[pathKey];
+}
+
+function show(screen) {
+  for (const s of ["choice", "mission", "android", "tracker"]) $("screen-" + s).hidden = s !== screen;
+  $("btn-back").hidden = screen === "choice";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function render(pathKey) {
+  const path = PATHS[pathKey];
+  const p = progress(pathKey);
+  const n = path.objectives.length;
+  $("title").textContent = path.title;
+
+  $("progress-count").textContent = `${p.done} / ${n}`;
+  $("progress-label").textContent = p.done === n ? "Missione compiuta" : "Avanzamento";
+  $("progress-bar").style.width = (p.done / n * 100) + "%";
+  $("pips").innerHTML = path.objectives.map((o, i) =>
+    `<div class="pip ${i < p.done ? "done" : i === p.done ? "on" : ""}" title="${o.title}">${svg(o.icon)}</div>`).join("");
+
+  $("objectives").innerHTML = path.objectives.map((o, i) => {
+    const st = i < p.done ? "done" : i === p.done ? "active" : "locked";
+    const open = st === "active" || (st === "done" && p.open === i);
+    const label = { done: "Completato", active: "In corso", locked: "Bloccato" }[st];
+    const checks = p.checks[i] || [];
+    const allChecked = o.tasks.every((_, t) => checks[t]);
+    return `
+      <article class="obj ${st}" data-i="${i}">
+        <button class="obj-head" ${st === "locked" ? 'disabled aria-disabled="true"' : ""} aria-expanded="${open}">
+          <span class="icon">${svg(o.icon)}<span class="badge">${svg("i-check")}</span></span>
+          <span><span class="code">${o.code}</span><br><span class="obj-title">${o.title}</span></span>
+          <span class="state">${label}</span>
+        </button>
+        ${open ? `
+        <div class="obj-body">
+          <p class="brief">${o.brief}</p>
+          <ul class="tasks">
+            ${o.tasks.map((t, ti) => `
+              <li><label class="task ${checks[ti] ? "checked" : ""}" data-t="${ti}">
+                <input type="checkbox" ${checks[ti] ? "checked" : ""} ${st === "done" ? "disabled" : ""}>
+                <span class="box">${svg("i-check")}</span>
+                <span class="task-text">${t}</span>
+              </label></li>`).join("")}
+          </ul>
+          ${o.alert ? `<p class="alert">${o.alert}</p>` : ""}
+          ${o.help ? `<details class="help"><summary>Se qualcosa non va</summary><ul>${o.help.map((h) => `<li>${h}</li>`).join("")}</ul></details>` : ""}
+          ${st === "active" ? `<button class="complete" ${allChecked ? "" : "disabled"}>${i === n - 1 ? "Conferma contatto" : "Obiettivo completato"}</button>` : ""}
+        </div>` : ""}
+      </article>`;
+  }).join("");
+
+  $("victory").hidden = p.done !== n;
+}
+
+// ---------- interazioni ----------
+let current = null;
+
+document.addEventListener("click", (e) => {
+  const pathBtn = e.target.closest(".path");
+  if (pathBtn) {
+    current = pathBtn.dataset.path;
+    store.last = current; save();
+    if (!PATHS[current]) { $("title").textContent = "Missione Android"; return show("android"); }
+    render(current); return show("mission");
+  }
+  if (e.target.closest("#btn-back")) {
+    store.last = null; save(); $("title").textContent = "Briefing di missione"; return show("choice");
+  }
+  if (e.target.closest("#btn-reset") && current && PATHS[current]) {
+    store[current] = { done: 0, checks: {}, open: null }; save(); render(current);
+    return window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  if (!current || !PATHS[current]) return;
+  const p = progress(current);
+  const obj = e.target.closest(".obj");
+  if (!obj) return;
+  const i = Number(obj.dataset.i);
+
+  if (e.target.closest(".store")) return; // il link apre l'App Store, senza spuntare
+
+  const task = e.target.closest(".task");
+  if (task && obj.classList.contains("active")) {
+    e.preventDefault();
+    const t = Number(task.dataset.t);
+    p.checks[i] = p.checks[i] || [];
+    p.checks[i][t] = !p.checks[i][t];
+    save(); render(current);
+    return;
+  }
+  if (e.target.closest(".complete")) {
+    p.done = i + 1; p.open = null; save(); render(current);
+    const next = document.querySelector(`.obj[data-i="${p.done}"]`) || $("victory");
+    next.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  if (e.target.closest(".obj-head") && obj.classList.contains("done")) {
+    p.open = p.open === i ? null : i; save(); render(current);
+  }
+});
+
+// Ripresa da dove si era rimasti.
+// ---------- dossier del giocatore ----------
+if (KIT) {
+  const [cName, cHex] = TEAM_COLORS[KIT.c];
+  $("dossier").hidden = false;
+  $("dossier").innerHTML = `
+    <div class="code">Dossier operatore</div>
+    <div class="kvs">
+      <span>Nominativo</span><b>${esc(KIT.n)}</b>
+      <span>Squadra</span><b><i class="swatch" style="background:${cHex}"></i>${cName}</b>
+      <span>Ruolo</span><b>${ROLES[KIT.r]}</b>
+      <span>Canale</span><b>${esc(KIT.ch)}</b>
+    </div>
+    <details><summary>Chiave del canale</summary>
+      <p>Serve solo per riconfigurare il nodo con il configuratore. Non condividerla fuori dalla squadra.</p>
+      <div class="keybox"><code>${esc(KIT.keyB64)}</code><button class="link-btn" id="copy-key">Copia</button></div>
+    </details>`;
+  $("copy-key").onclick = async () => {
+    try { await navigator.clipboard.writeText(KIT.keyB64); $("copy-key").textContent = "Copiata"; } catch { prompt("Chiave del canale:", KIT.keyB64); }
+  };
+  $("screen-choice").querySelector(".lead").textContent =
+    `Benvenuto, ${KIT.n}. Sei obiettivi ti separano dal primo contatto radio con la tua squadra. Indica il telefono che userai sul campo.`;
+}
+// Il link punta a un'altra persona o a un altro dispositivo: ricarica per rileggere i dati.
+window.addEventListener("hashchange", () => location.reload());
+
+if (KIT && KIT.t === "tracker") { $("title").textContent = "Il tuo tracker"; show("tracker"); $("btn-back").hidden = true; }
+else if (store.last && PATHS[store.last]) { current = store.last; render(current); show("mission"); }
+else if (store.last === "android") { current = "android"; $("title").textContent = "Missione Android"; show("android"); }
+</script>
+</body>
+</html>
