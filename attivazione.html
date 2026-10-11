@@ -52,7 +52,7 @@
   .progress-top b { color: var(--ink); font-size: 14px; }
   .bar { height: 8px; background: var(--off-soft); border-radius: 999px; overflow: hidden; margin: 10px 0 12px; }
   .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 999px; transition: width .5s ease; }
-  .pips { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .pips { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: 6px; }
   .pip { aspect-ratio: 1; max-height: 44px; border-radius: 10px; display: grid; place-items: center;
     color: var(--off); background: var(--off-soft); transition: color .3s, background .3s, box-shadow .3s; }
   .pip svg { width: 60%; height: 60%; }
@@ -93,7 +93,9 @@
   .task.checked .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .task-text { font-size: 15px; }
   .task-text b { font-weight: 650; }
-  .path-ui { font: 600 13px var(--mono); background: var(--off-soft); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+  .path-ui { font: 600 13px var(--mono); background: var(--off-soft); padding: 1px 5px; border-radius: 4px;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .path-ui .nw { white-space: nowrap; }
   .store { display: inline-block; margin-top: 8px; font: 600 14px system-ui, sans-serif; color: var(--accent);
     border: 1px solid var(--accent); border-radius: 8px; padding: 6px 12px; text-decoration: none; }
   .alert { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; font-size: 14px;
@@ -129,8 +131,6 @@
   .dossier summary { cursor: pointer; font: 12px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
   .keybox { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
   .keybox code { flex: 1; min-width: 0; font: 12px var(--mono); background: var(--off-soft); padding: 6px 8px; border-radius: 6px; overflow-wrap: anywhere; color: var(--ink); }
-  .soon { background: var(--card); border: 1px dashed var(--line); border-radius: 14px; padding: 18px; color: var(--muted); }
-  .soon ol { margin: 10px 0 0; padding-left: 20px; }
   footer { margin-top: 22px; text-align: center; font: 12px var(--mono); color: var(--muted); }
 </style>
 </head>
@@ -172,6 +172,11 @@
       <circle cx="24" cy="24" r="4"/>
       <path d="M24 3v9M24 36v9M3 24h9M36 24h9"/>
     </symbol>
+    <symbol id="i-plug" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 5v9M30 5v9"/>
+      <path d="M12 14h24v7a12 12 0 0 1-24 0z"/>
+      <path d="M24 33v5a5 5 0 0 1-5 5h-4"/>
+    </symbol>
     <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M5 12.5l4.5 4.5L19 7.5"/>
     </symbol>
@@ -201,12 +206,12 @@
       <button class="path" data-path="ios">
         <span class="pic"><svg width="30" height="30"><use href="#i-phone"/></svg></span>
         <span><b>iPhone</b><span>Con l'app iTAK</span></span>
-        <span class="tag">6 obiettivi</span>
+        <span class="tag" data-count="ios">6 obiettivi</span>
       </button>
       <button class="path" data-path="android">
         <span class="pic"><svg width="30" height="30"><use href="#i-phone"/></svg></span>
         <span><b>Android</b><span>Con l'app ATAK</span></span>
-        <span class="tag">In preparazione</span>
+        <span class="tag" data-count="android">6 obiettivi</span>
       </button>
     </div>
   </section>
@@ -223,7 +228,7 @@
       <svg class="big"><use href="#i-target"/></svg>
       <div class="code">Obiettivo finale raggiunto</div>
       <h2>Contatto stabilito</h2>
-      <p>Missione compiuta. Il tuo nodo è in rete e la squadra ti vede sulla mappa. Prima di ogni partita basta accendere il nodo e aprire Meshtastic e iTAK.</p>
+      <p id="victory-text">Missione compiuta. Il tuo nodo è in rete e la squadra ti vede sulla mappa.</p>
       <button class="link-btn" id="btn-reset" style="margin-top:16px">Ricomincia la guida</button>
     </div>
   </section>
@@ -246,21 +251,6 @@
     </div>
   </section>
 
-  <!-- Android: struttura pronta, contenuti da definire -->
-  <section id="screen-android" hidden>
-    <div class="soon">
-      <div class="code">Percorso Android · In preparazione</div>
-      <p>La guida per Android con ATAK è in arrivo. Gli obiettivi previsti:</p>
-      <ol>
-        <li>Equipaggiamento: ATAK e plugin Meshtastic</li>
-        <li>Aggancio al nodo</li>
-        <li>Attivazione del plugin</li>
-        <li>Identità</li>
-        <li>Contatto stabilito</li>
-      </ol>
-    </div>
-  </section>
-
   <footer>Problemi? Contatta chi ti ha fornito il kit.</footer>
 </div>
 
@@ -269,8 +259,12 @@
 const LINKS = {
   meshtasticIos: "https://apps.apple.com/app/meshtastic/id1586432531",
   itak: "https://apps.apple.com/app/id1561656396",
+  meshtasticAndroid: "https://play.google.com/store/apps/details?id=com.geeksville.mesh",
+  atak: "https://play.google.com/store/apps/details?id=com.atakmap.app.civ",
+  atakPlugin: "https://github.com/meshtastic/ATAK-Plugin/releases",
 };
-const ui = (t) => `<span class="path-ui">${t}</span>`;
+// I percorsi di menu lunghi possono andare a capo solo dopo una freccia.
+const ui = (t) => `<span class="path-ui">${t.split(" → ").map((s) => `<span class="nw">${s}</span>`).join(" → ")}</span>`;
 const esc = (x) => String(x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 // ---------- dati del giocatore nel link (dopo il #) ----------
@@ -309,16 +303,19 @@ const T = KIT ? {
   pick: `scegli il canale <b>${esc(KIT.ch)}</b>`,
   callsign: `imposta il nominativo <b>${esc(KIT.n)}</b> (callsign)`,
   colorRole: `Scegli il colore squadra <b>${TEAM_COLORS[KIT.c][0]}</b> (${KIT.c}) e il ruolo <b>${ROLES[KIT.r]}</b>.`,
+  index: `<b>0</b>, cioè il canale principale <b>${esc(KIT.ch)}</b>`,
 } : {
   channel: "il canale principale ha il nome della tua squadra",
   pick: "scegli il <b>canale della tua squadra</b>",
   callsign: "imposta il tuo <b>nominativo</b> (callsign)",
   colorRole: "Scegli il <b>colore squadra</b> e il <b>ruolo</b> concordati con il team.",
+  index: "<b>0</b>, cioè il canale principale della squadra",
 };
 
 const PATHS = {
   ios: {
     title: "Missione iPhone",
+    finale: "Prima di ogni partita basta accendere il nodo e aprire Meshtastic e iTAK.",
     objectives: [
       {
         icon: "i-pack", code: "Obiettivo 1", title: "Equipaggiamento",
@@ -377,7 +374,7 @@ const PATHS = {
         tasks: [
           `In <b>iTAK</b>, nelle impostazioni, ${T.callsign}.`,
           T.colorRole,
-          `In Meshtastic, ${ui("TAK Server → TAK Identity")}: stesso colore e stesso ruolo, poi salva.`,
+          `In Meshtastic, ${ui("Server TAK → Identità TAK")}: stesso colore e stesso ruolo, poi salva. Se resta su «Caricamento configurazione TAK dal nodo», salta questa voce: basta iTAK.`,
         ],
       },
       {
@@ -391,6 +388,102 @@ const PATHS = {
         help: [
           "Non vedi i compagni: tutti i nodi della squadra devono avere lo stesso canale. Se un compagno ha una configurazione diversa non compare, senza errori: confrontate il nome del canale in Meshtastic.",
           "Non vedi te stesso: controlla che iTAK abbia il permesso di usare la posizione.",
+        ],
+      },
+    ],
+  },
+  android: {
+    title: "Missione Android",
+    finale: "Prima di ogni partita basta accendere il nodo, controllare che Meshtastic sia collegata e aprire ATAK.",
+    objectives: [
+      {
+        icon: "i-pack", code: "Obiettivo 1", title: "Equipaggiamento",
+        brief: "Due app dal Play Store e un plugin da GitHub. Sono il tuo equipaggiamento radio.",
+        tasks: [
+          `<b>Meshtastic</b>: parla con il nodo via Bluetooth.<br><a class="store" href="${LINKS.meshtasticAndroid}" target="_blank" rel="noopener">Apri il Play Store</a>`,
+          `<b>ATAK-CIV</b>: la mappa tattica della squadra.<br><a class="store" href="${LINKS.atak}" target="_blank" rel="noopener">Apri il Play Store</a>`,
+          "Annota la <b>versione di ATAK</b> installata: la vedi nelle informazioni dell'app ATAK, nelle impostazioni di Android.",
+          `<b>Plugin Meshtastic per ATAK</b>: non è sul Play Store. Dalla pagina ufficiale delle release scarica il file <b>APK</b> della versione che corrisponde al tuo ATAK.<br><a class="store" href="${LINKS.atakPlugin}" target="_blank" rel="noopener">Apri GitHub Releases</a>`,
+        ],
+        alert: "<b>Scarica il plugin solo da github.com/meshtastic/ATAK-Plugin.</b> Un plugin costruito per una versione diversa di ATAK non si carica.",
+        help: [
+          "La release più recente indica una versione di ATAK diversa dalla tua: aggiorna ATAK dal Play Store e riprova. Se non basta, chiedi a chi ti ha fornito il kit quale file usare.",
+          "Non trovi il file: nella pagina delle release apri l'elenco dei file allegati alla release più recente e tocca quello che termina con .apk.",
+        ],
+      },
+      {
+        icon: "i-antenna", code: "Obiettivo 2", title: "Aggancio al nodo",
+        brief: "Colleghi il telefono al tuo nodo radio con l'app Meshtastic. Il nodo è già configurato: canale e chiave non vanno toccati.",
+        tasks: [
+          "Accendi il nodo e tienilo vicino al telefono.",
+          "Apri <b>Meshtastic</b> e consenti i permessi <b>Bluetooth</b> e <b>Posizione</b>: servono per trovare il nodo.",
+          `Nella scheda ${ui("Connect")} scegli ${ui("Bluetooth")}, tocca ${ui("Scan for Bluetooth devices")} e poi il tuo nodo.`,
+          "Inserisci il <b>PIN</b> quando Android lo chiede: lo trovi sull'etichetta del kit o sul display del nodo. Lo stato diventa <b>verde</b> (collegato).",
+          `In ${ui("Settings → Channels")} ${T.channel}.`,
+        ],
+        alert: "<b>Il nodo accetta un solo telefono alla volta.</b> Meshtastic resta attiva in background e si ricollega da sola all'ultimo nodo: è ciò che serve ad ATAK. Per usare un altro telefono o il configuratore, prima scollega il nodo dalla scheda Connect.",
+        help: [
+          "Il nodo non compare: spegni e riaccendi il Bluetooth, controlla che la localizzazione sia attiva e che il nodo non sia collegato a un altro telefono.",
+          "Il PIN viene rifiutato: nelle impostazioni Bluetooth di Android elimina il nodo dai dispositivi associati, poi ricollegalo dall'app.",
+          "Il nome del canale non è quello della tua squadra: non modificarlo. Contatta chi ti ha fornito il kit.",
+        ],
+      },
+      {
+        icon: "i-plug", code: "Obiettivo 3", title: "Innesto del plugin",
+        brief: "Il plugin è il pezzo che collega ATAK alla radio. Lo installi dal file scaricato e lo carichi dentro ATAK.",
+        tasks: [
+          "Apri il file <b>APK</b> scaricato: dalla notifica del browser o dalla cartella Download.",
+          "Se Android blocca l'installazione, consenti al browser (o al gestore file) di <b>installare app sconosciute</b>, poi torna indietro e tocca <b>Installa</b>.",
+          "Apri <b>ATAK</b> e completa la configurazione iniziale, concedendo il permesso di usare la posizione.",
+          "Carica il plugin <b>Meshtastic</b>: conferma se ATAK propone di caricare il nuovo plugin, altrimenti caricalo dal menu dei plugin di ATAK.",
+        ],
+        alert: "<b>A installazione finita</b> puoi togliere di nuovo al browser il permesso di installare app sconosciute: il plugin resta installato.",
+        help: [
+          "ATAK segnala il plugin come incompatibile o non lo carica: la versione del plugin non corrisponde a quella di ATAK. Torna all'Obiettivo 1 e scarica il file giusto.",
+          "Google Play Protect mostra un avviso: è normale per le app fuori dal Play Store. Procedi solo se il file viene da github.com/meshtastic.",
+          "Il plugin non compare in ATAK: chiudi ATAK del tutto e riaprilo.",
+        ],
+      },
+      {
+        icon: "i-link", code: "Obiettivo 4", title: "Ponte radio",
+        brief: "ATAK non parla direttamente con il nodo: il plugin passa attraverso l'app Meshtastic, che fa da ponte tra i due.",
+        tasks: [
+          "In <b>Meshtastic</b> il nodo risulta collegato (stato verde). Lascia l'app aperta in secondo piano.",
+          "In <b>ATAK</b> l'icona di Meshtastic in basso a destra è <b>verde</b>. Rossa significa che il plugin non raggiunge Meshtastic.",
+          `In ATAK apri ${ui("Settings → Tool Preferences → Specific Tool Preferences → Meshtastic Preferences")}.`,
+          `Controlla che ${ui("Meshtastic Channel Index")} sia ${T.index}.`,
+        ],
+        alert: "<b>Non modificare le altre impostazioni del plugin</b>, in particolare «Enable Extra Encryption»: se la attivi solo tu, la squadra non riceve più i tuoi messaggi.",
+        help: [
+          "L'icona è rossa: apri Meshtastic e ricollega il nodo. Il plugin si riaggancia da solo, senza riavviare ATAK.",
+          "L'icona non c'è: il plugin non è installato o non è caricato. Torna all'Obiettivo 3.",
+          "Il collegamento cade dopo un po': Android sta chiudendo Meshtastic per risparmiare batteria. Escludi Meshtastic dall'ottimizzazione della batteria nelle impostazioni di Android.",
+        ],
+      },
+      {
+        icon: "i-badge", code: "Obiettivo 5", title: "Identità",
+        brief: "Chi sei sulla mappa: nominativo, colore della squadra e ruolo. Li trasmette ATAK: in Meshtastic non devi impostare nulla.",
+        tasks: [
+          `In <b>ATAK</b> apri ${ui("Settings → Callsign and Device Preferences")} e ${T.callsign}.`,
+          T.colorRole,
+          "Torna alla mappa: il tuo marker mostra il nuovo nominativo.",
+        ],
+        help: [
+          "Non trovi colore e ruolo: cercali nelle impostazioni di ATAK, nella stessa sezione del nominativo.",
+        ],
+      },
+      {
+        icon: "i-target", code: "Obiettivo finale", title: "Contatto stabilito",
+        brief: "Ultimo controllo: tu e la squadra sulla stessa mappa.",
+        tasks: [
+          "Sulla mappa di ATAK vedi il <b>tuo marker</b> nella tua posizione.",
+          "Vedi almeno un <b>compagno</b> (con il nodo acceso). Il plugin invia le posizioni a intervalli: possono servire alcuni minuti.",
+          "Invii un <b>messaggio di prova</b> nella chat di squadra di ATAK e lo ricevi dall'altra parte.",
+        ],
+        help: [
+          "Non vedi i compagni: tutti i nodi della squadra devono avere lo stesso canale. Se un compagno ha una configurazione diversa non compare, senza errori: confrontate il nome del canale in Meshtastic.",
+          "Vedi due marker per lo stesso compagno: uno è la sua posizione da ATAK, l'altro è il suo nodo Meshtastic. È normale.",
+          "Non vedi te stesso: controlla che ATAK abbia il permesso di usare la posizione.",
         ],
       },
     ],
@@ -412,7 +505,7 @@ function progress(pathKey) {
 }
 
 function show(screen) {
-  for (const s of ["choice", "mission", "android", "tracker"]) $("screen-" + s).hidden = s !== screen;
+  for (const s of ["choice", "mission", "tracker"]) $("screen-" + s).hidden = s !== screen;
   $("btn-back").hidden = screen === "choice";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -426,6 +519,7 @@ function render(pathKey) {
   $("progress-count").textContent = `${p.done} / ${n}`;
   $("progress-label").textContent = p.done === n ? "Missione compiuta" : "Avanzamento";
   $("progress-bar").style.width = (p.done / n * 100) + "%";
+  $("pips").style.setProperty("--n", n);
   $("pips").innerHTML = path.objectives.map((o, i) =>
     `<div class="pip ${i < p.done ? "done" : i === p.done ? "on" : ""}" title="${o.title}">${svg(o.icon)}</div>`).join("");
 
@@ -461,6 +555,7 @@ function render(pathKey) {
   }).join("");
 
   $("victory").hidden = p.done !== n;
+  $("victory-text").textContent = "Missione compiuta. Il tuo nodo è in rete e la squadra ti vede sulla mappa. " + path.finale;
 }
 
 // ---------- interazioni ----------
@@ -471,7 +566,6 @@ document.addEventListener("click", (e) => {
   if (pathBtn) {
     current = pathBtn.dataset.path;
     store.last = current; save();
-    if (!PATHS[current]) { $("title").textContent = "Missione Android"; return show("android"); }
     render(current); return show("mission");
   }
   if (e.target.closest("#btn-back")) {
@@ -509,7 +603,12 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Ripresa da dove si era rimasti.
+// Numero di obiettivi di ciascun percorso nel bivio.
+document.querySelectorAll("[data-count]").forEach((el) => {
+  const k = el.dataset.count;
+  if (PATHS[k]) el.textContent = PATHS[k].objectives.length + " obiettivi";
+});
+
 // ---------- dossier del giocatore ----------
 if (KIT) {
   const [cName, cHex] = TEAM_COLORS[KIT.c];
@@ -535,9 +634,10 @@ if (KIT) {
 // Il link punta a un'altra persona o a un altro dispositivo: ricarica per rileggere i dati.
 window.addEventListener("hashchange", () => location.reload());
 
+// Ripresa da dove si era rimasti.
+
 if (KIT && KIT.t === "tracker") { $("title").textContent = "Il tuo tracker"; show("tracker"); $("btn-back").hidden = true; }
 else if (store.last && PATHS[store.last]) { current = store.last; render(current); show("mission"); }
-else if (store.last === "android") { current = "android"; $("title").textContent = "Missione Android"; show("android"); }
 </script>
 </body>
 </html>
