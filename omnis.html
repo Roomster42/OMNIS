@@ -1,0 +1,674 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>
+<title>O.M.N.I.S.</title>
+<meta name="description" content="Off-grid Mesh Network for Integrated Scenarios: ATAK senza campo, nel bosco, per 192 operatori.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: racconto verticale a sezioni alternate grafite/avorio, come le slide; tre sezioni "fermo immagine"
+   (architettura, percorso del pacchetto, 192 operatori) si animano con lo scorrimento. Un solo look, voluto. */
+:root {
+  --ink: #111518;        /* grafite: fondo scuro */
+  --ink-2: #1b2126;      /* pannelli su grafite */
+  --ink-line: #2c353c;
+  --paper: #ebe9e2;      /* avorio: fondo chiaro */
+  --paper-2: #f6f5f0;
+  --paper-line: #d3d1c8;
+  --amber: #f0a33a;      /* accento */
+  --amber-deep: #8a5a12; /* ambra leggibile su avorio */
+  --bone: #eceae3;       /* testo su grafite */
+  --slate: #9aa3a9;      /* testo secondario su grafite */
+  --slate-d: #4f585e;    /* testo secondario su avorio */
+  --display: "Oswald", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --wrap: 1180px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--ink); color: var(--bone); font: 17px/1.55 var(--body); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: clamp(16px, 5vw, 56px); }
+section { position: relative; }
+.dark { background: var(--ink); color: var(--bone); }
+.light { background: var(--paper); color: var(--ink); }
+.amber { background: var(--amber); color: var(--ink); }
+.pad { padding-block: clamp(80px, 13vw, 160px); }
+
+.eyebrow { font: 600 13px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--amber); margin: 0 0 18px; }
+.light .eyebrow { color: var(--amber-deep); }
+.amber .eyebrow { color: var(--ink); }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: .005em; margin: 0; text-wrap: balance; line-height: .98; }
+h2 { font-size: clamp(40px, 7vw, 92px); }
+h3 { font-size: clamp(22px, 2.4vw, 30px); font-weight: 600; line-height: 1.05; }
+.lead { font-size: clamp(19px, 2vw, 24px); line-height: 1.45; font-weight: 500; max-width: 30ch; margin: 0; }
+.muted { color: var(--slate); }
+.light .muted { color: var(--slate-d); }
+.note { font: 500 12.5px/1.5 var(--mono); letter-spacing: .06em; color: var(--slate); margin-top: 36px; }
+.light .note { color: var(--slate-d); }
+p { margin: 0; }
+.ac { color: var(--amber); }
+
+/* barra di avanzamento della lettura */
+.progress { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: 3px; z-index: 20; pointer-events: none; }
+.progress i { display: block; height: 100%; width: 100%; background: var(--amber); transform-origin: 0 50%; transform: scaleX(var(--read, 0)); }
+
+/* comparsa morbida: lo stato di riposo è visibile, l'animazione parte solo con JS attivo */
+.js .rv { transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: calc(var(--i, 0) * 90ms); }
+.js .rv:not(.in) { opacity: .08; transform: translateY(36px); }
+
+/* ---------- HERO ---------- */
+.hero { overflow: hidden; padding-block: clamp(64px, 9vw, 120px) clamp(72px, 10vw, 130px); }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 32px; align-items: center; }
+.hero h1 { position: relative; z-index: 1; font-size: clamp(64px, 11vw, 160px); line-height: .86; letter-spacing: -.005em; color: var(--bone);
+  transform: translateY(calc(var(--p, 0) * -40px)) scale(calc(1 - var(--p, 0) * .06)); transform-origin: 0 100%; }
+.hero .full { font-size: clamp(16px, 2vw, 24px); color: var(--slate); margin: 18px 0 0; }
+.hero .tag { font-family: var(--display); font-weight: 600; text-transform: uppercase; color: var(--amber);
+  font-size: clamp(30px, 4.6vw, 58px); line-height: 1.02; margin: 26px 0 0; }
+.hero .tag span { display: block; }
+.radar { width: 100%; max-width: 520px; aspect-ratio: 1; justify-self: end; transform: scale(calc(1 + var(--p, 0) * .18)) rotate(calc(var(--p, 0) * 18deg)); }
+.radar svg { width: 100%; height: 100%; overflow: visible; }
+.ring { fill: none; stroke: #2f3a41; stroke-width: 1.2; }
+.link { stroke: #59656c; stroke-width: 1.6; }
+.node { fill: var(--amber); }
+.sweep { transform-origin: 200px 200px; animation: spin 7s linear infinite; }
+.pulse { transform-origin: 200px 200px; animation: pulse 3.2s ease-out infinite; fill: none; stroke: var(--amber); stroke-width: 2; }
+.pulse.b { animation-delay: 1.6s; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0% { transform: scale(.15); opacity: .9; } 100% { transform: scale(1.75); opacity: 0; } }
+.scroll-cue { margin-top: 44px; font: 500 12px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--slate); display: flex; align-items: center; gap: 12px; }
+.scroll-cue i { width: 1px; height: 38px; background: linear-gradient(var(--amber), transparent); animation: cue 2s ease-in-out infinite; }
+@keyframes cue { 0%, 100% { transform: scaleY(.4); transform-origin: top; } 50% { transform: scaleY(1); } }
+
+/* ---------- PROBLEMA ---------- */
+.statement { font-family: var(--display); font-weight: 600; text-transform: uppercase; font-size: clamp(34px, 5.6vw, 76px); line-height: 1.04; margin: 56px 0 0; max-width: 18ch; }
+.statement .w { color: color-mix(in srgb, var(--ink) 16%, transparent); transition: color .35s; }
+.statement .w.on { color: var(--ink); }
+.cards3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 72px; }
+.pcard { background: var(--paper-2); border: 1px solid var(--paper-line); border-radius: 14px; padding: 30px 28px; display: grid; gap: 12px; align-content: start; }
+.pcard svg { width: 32px; height: 32px; }
+.pcard p { color: var(--slate-d); }
+
+/* ---------- SOLUZIONE ---------- */
+.split { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(32px, 6vw, 80px); align-items: center; margin-top: 64px; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fact { background: var(--ink-2); border: 1px solid var(--ink-line); border-radius: 14px; padding: 28px 26px; }
+.fact b { display: block; font: 600 clamp(34px, 4vw, 52px)/1 var(--display); color: var(--amber); margin-bottom: 12px; }
+.fact p { color: #c9ccc8; font-size: 16px; }
+
+/* ---------- ARCHITETTURA (fermo immagine) ---------- */
+.tall { height: 380vh; }
+.stick { position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; height: 100svh; display: flex; align-items: center; overflow: hidden; }
+.stick .wrap { width: 100%; }
+.arch-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); align-items: center; margin-top: 40px; }
+.net { width: 100%; }
+.net .g { opacity: .22; transition: opacity .5s; }
+.net .g.on { opacity: 1; }
+.net .g.past { opacity: .55; }
+.net line { stroke: var(--slate-d); stroke-width: 1.6; }
+.net .lbl { font: 600 13px var(--mono); fill: var(--slate-d); letter-spacing: .1em; }
+.net .t-amber { fill: var(--amber); }
+.net .t-ink { fill: var(--ink); }
+.tiers { display: grid; gap: 10px; }
+.tier { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 4px 18px; padding: 18px 20px; border-radius: 14px; border: 1px solid var(--paper-line);
+  background: var(--paper-2); transition: background .45s, border-color .45s, transform .45s; }
+.tier .n { font: 700 40px/1 var(--display); grid-row: span 2; }
+.tier h3 { font-size: 22px; }
+.tier p { color: var(--slate-d); font-size: 15px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .5s, opacity .5s; }
+.tier.on { background: var(--amber); border-color: var(--amber); transform: translateX(-6px); }
+.tier.on p { max-height: 120px; opacity: 1; color: var(--ink); }
+.tier .start { font: 600 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; margin-left: 10px; vertical-align: 3px; }
+.arch-foot { margin-top: 26px; font-weight: 600; }
+
+/* ---------- TRACKER ---------- */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 64px; }
+.stat { background: var(--ink-2); border: 1px solid var(--ink-line); border-radius: 14px; padding: 30px 28px 28px; }
+.stat b { display: block; font: 700 clamp(56px, 7.5vw, 104px)/.95 var(--display); color: var(--amber); font-variant-numeric: tabular-nums; }
+.stat p { margin-top: 14px; color: #c9ccc8; font-size: 16px; }
+.ticks { list-style: none; padding: 0; margin: 48px 0 0; display: grid; gap: 14px; max-width: 760px; }
+.ticks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; font-size: 18px; }
+.ticks li::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--amber); margin-top: 9px; }
+
+/* ---------- PERCORSO DEL PACCHETTO (fermo immagine) ---------- */
+.flow { margin-top: 48px; }
+.track { position: relative; height: 96px; margin: 0 4%; }
+.track .rail { position: absolute; left: 0; right: 0; top: 47px; height: 2px; background: var(--paper-line); }
+.track .fill { position: absolute; left: 0; top: 47px; height: 2px; background: var(--amber-deep); width: calc(var(--fp, 1) * 100%); }
+.track .packet { position: absolute; top: 37px; left: calc(var(--fp, 1) * 100%); width: 22px; height: 22px; margin-left: -11px; border-radius: 50%;
+  background: var(--amber); box-shadow: 0 0 0 6px rgba(240,163,58,.25), 0 0 26px rgba(240,163,58,.8); }
+.track .st { position: absolute; top: 20px; width: 56px; height: 56px; margin-left: -28px; border-radius: 50%; background: var(--paper-2); border: 2px solid var(--paper-line);
+  display: grid; place-items: center; color: var(--slate-d); transition: all .4s; }
+.track .st svg { width: 26px; height: 26px; }
+.track .st.on { background: var(--ink); border-color: var(--ink); color: var(--amber); }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 28px; }
+.step { background: var(--ink); color: var(--bone); border-radius: 14px; padding: 24px 22px; opacity: .35; transform: translateY(10px); transition: opacity .45s, transform .45s; }
+.step.on { opacity: 1; transform: none; }
+.step b { font: 700 46px/1 var(--display); color: var(--amber); display: block; }
+.step h3 { margin: 10px 0 8px; font-size: 22px; }
+.step p { color: #c9ccc8; font-size: 15px; }
+.flow-foot { margin-top: 26px; font-weight: 600; }
+
+/* ---------- PERCHÉ CIECO ---------- */
+.why { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 64px; }
+.why .card { background: var(--ink-2); border: 1px solid var(--ink-line); border-radius: 14px; padding: 30px 28px; display: grid; gap: 12px; align-content: start; }
+.why svg { width: 30px; height: 30px; color: var(--amber); }
+.why p { color: #c9ccc8; }
+.compromise { margin-top: 44px; font: 600 clamp(20px, 2.2vw, 26px)/1.3 var(--body); color: var(--amber); }
+
+/* ---------- SUL CAMPO ---------- */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 64px; }
+.tile { background: var(--ink); color: var(--bone); border-radius: 14px; padding: 26px 24px; display: grid; gap: 10px; align-content: start; }
+.tile small { font: 600 12.5px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+.tile p { color: #d4d6d2; }
+
+/* ---------- VARIANTE GPS ---------- */
+.table-box { margin-top: 56px; overflow-x: auto; border: 1px solid var(--ink-line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 16px; }
+th, td { text-align: left; padding: 18px 22px; border-bottom: 1px solid var(--ink-line); vertical-align: top; }
+thead th { background: var(--ink-2); font-weight: 600; }
+thead th.opt { color: var(--amber); }
+tbody tr:last-child td { border-bottom: 0; }
+tbody td:first-child { color: var(--slate); font-weight: 500; width: 22%; }
+
+/* ---------- TIER 2 E 3 ---------- */
+.duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 64px; }
+.big-card { background: var(--ink); color: var(--bone); border-radius: 16px; padding: clamp(28px, 4vw, 44px); display: grid; gap: 16px; align-content: start; }
+.big-card small { font: 600 13px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+.big-card h3 { font-size: clamp(26px, 3vw, 38px); }
+.big-card ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: #d4d6d2; }
+
+/* ---------- TOC ---------- */
+.toc-items { display: grid; gap: 12px; }
+.toc-item { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 16px; align-items: center; background: var(--ink-2); border: 1px solid var(--ink-line); border-radius: 14px; padding: 20px 22px; }
+.toc-item svg { width: 26px; height: 26px; color: var(--amber); }
+
+/* ---------- 192 (fermo immagine) ---------- */
+.scale-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 72px); align-items: center; margin-top: 36px; }
+.count { font: 700 clamp(120px, 20vw, 270px)/.8 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.count-lbl { font: 600 clamp(26px, 3vw, 38px)/1 var(--display); text-transform: uppercase; margin-top: 10px; }
+.factions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 30px; }
+.faction small { font: 600 11.5px var(--mono); letter-spacing: .16em; text-transform: uppercase; display: block; margin-bottom: 8px; }
+.plt { display: flex; gap: 6px; margin-bottom: 6px; }
+.sq { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; flex: 1; }
+.dot { aspect-ratio: 1; border-radius: 50%; background: rgba(17,21,24,.16); transition: background .25s, transform .25s; }
+.dot.on { background: var(--ink); }
+.faction.b .dot.on { background: #fff8ec; box-shadow: inset 0 0 0 1.5px var(--ink); }
+.scale-text { display: grid; gap: 16px; font-size: 18px; }
+.scale-text b { font-size: 21px; }
+
+/* ---------- STATO ---------- */
+.status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 64px; }
+.col { background: var(--ink-2); border: 1px solid var(--ink-line); border-radius: 14px; padding: 30px 28px; }
+.col h3 { color: var(--amber); font-size: 30px; margin-bottom: 16px; }
+.col ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: #d4d6d2; }
+.col .badge { font: 600 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--slate); display: block; margin-bottom: 10px; }
+.col.now { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+.final { font-family: var(--display); font-weight: 700; text-transform: uppercase; color: var(--amber); font-size: clamp(36px, 6vw, 80px); line-height: 1; margin-top: clamp(64px, 9vw, 120px); max-width: 16ch; }
+footer { border-top: 1px solid var(--ink-line); padding-block: 28px; font: 500 12.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--slate); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+
+/* ---------- telefono ---------- */
+@media (max-width: 860px) {
+  .hero .wrap, .split, .arch-grid, .scale-grid { grid-template-columns: minmax(0, 1fr); }
+  .radar { justify-self: center; max-width: 360px; order: -1; }
+  .cards3, .stats, .why, .status, .duo { grid-template-columns: minmax(0, 1fr); }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .net { max-height: 30vh; }
+  .arch-grid { margin-top: 20px; gap: 18px; }
+  .tier { padding: 12px 16px; grid-template-columns: 50px minmax(0, 1fr); }
+  .tier .n { font-size: 32px; }
+  .tier h3 { font-size: 19px; }
+  .tall { height: 340vh; }
+}
+@media (max-width: 520px) {
+  .tiles, .facts { grid-template-columns: minmax(0, 1fr); }
+  .stick { padding-block: 20px; }
+  .stick h2 { font-size: 36px; }
+  .steps { gap: 10px; margin-top: 18px; }
+  .step { padding: 14px 14px; }
+  .step b { font-size: 30px; }
+  .step h3 { font-size: 17px; margin: 6px 0 4px; }
+  .step p { font-size: 13.5px; line-height: 1.4; }
+  .flow { margin-top: 24px; }
+  .flow-foot { font-size: 15px; margin-top: 16px; }
+  .track { margin: 0 6%; }
+  .track .st { width: 44px; height: 44px; margin-left: -22px; top: 26px; }
+  .track .st svg { width: 20px; height: 20px; }
+}
+
+/* ---------- movimento ridotto: tutto statico e completo ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .sweep, .pulse, .scroll-cue i { animation: none; }
+  .pulse { display: none; }
+  .js .rv:not(.in) { opacity: 1; transform: none; }
+  .hero h1, .radar { transform: none; }
+  .tall { height: auto; }
+  .stick { position: static; height: auto; padding-block: clamp(80px, 13vw, 160px); }
+  .tier p { max-height: none; opacity: 1; }
+  .step { opacity: 1; transform: none; }
+  .statement .w { color: var(--ink); }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ic-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17.2v.1"/></symbol>
+    <symbol id="ic-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 3.8 5.4 3.8 8.5s-1.2 5.9-3.8 8.5c-2.6-2.6-3.8-5.4-3.8-8.5S9.4 6.1 12 3.5z"/></symbol>
+    <symbol id="ic-people" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="16.5" cy="9.5" r="2.5"/><path d="M16 14.2c2.6.2 4.4 1.8 5 4.3"/></symbol>
+    <symbol id="ic-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.8 5 13.5h6l-1 7.7 8-10.7h-6z"/></symbol>
+    <symbol id="ic-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6.5a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3l7.5-7.5"/><path d="M14.5 6.5 17 4a4 4 0 0 1 3 3l-2.5 2.5"/></symbol>
+    <symbol id="ic-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2"/></symbol>
+    <symbol id="ic-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.8" width="10" height="18.4" rx="2.4"/><path d="M11 18h2"/></symbol>
+    <symbol id="ic-bt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7.5 17 16.5 12 21V3l5 4.5L7 16.5"/></symbol>
+    <symbol id="ic-radio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="1.6"/><path d="M12 11.6V21M8.5 6.5a5 5 0 0 0 0 7M15.5 6.5a5 5 0 0 1 0 7M5.6 3.8a9 9 0 0 0 0 12.4M18.4 3.8a9 9 0 0 1 0 12.4"/></symbol>
+    <symbol id="ic-mesh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18.5" cy="19" r="2"/><path d="M6.6 7.3l3.9 4.3M17.4 7.3l-3.9 4.3M10.7 14.6 7.2 17.6M13.4 14.5l3.8 3.2M7 6h10"/></symbol>
+  </defs>
+</svg>
+
+<div class="progress" aria-hidden="true"><i></i></div>
+
+<!-- ===== HERO ===== -->
+<section class="hero dark" data-scrub>
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">TF Whiplash · Progetto in sviluppo</p>
+      <h1>O.M.N.I.S.</h1>
+      <p class="full">Off-grid Mesh Network for Integrated Scenarios</p>
+      <p class="tag"><span>ATAK senza campo.</span><span>Nel bosco. Per 192 operatori.</span></p>
+      <div class="scroll-cue"><i></i>Scorri per la missione</div>
+    </div>
+    <div class="radar" aria-hidden="true">
+      <svg viewBox="0 0 400 400">
+        <defs>
+          <linearGradient id="sw" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#f0a33a" stop-opacity="0"/>
+            <stop offset="1" stop-color="#f0a33a" stop-opacity=".28"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring" cx="200" cy="200" r="190"/>
+        <circle class="ring" cx="200" cy="200" r="128"/>
+        <circle class="ring" cx="200" cy="200" r="58"/>
+        <path class="sweep" d="M200 200 L390 200 A190 190 0 0 0 334 66 Z" fill="url(#sw)"/>
+        <line class="link" x1="200" y1="200" x2="80" y2="112"/>
+        <line class="link" x1="200" y1="200" x2="320" y2="62"/>
+        <line class="link" x1="200" y1="200" x2="336" y2="256"/>
+        <line class="link" x1="200" y1="200" x2="150" y2="324"/>
+        <circle class="pulse" cx="200" cy="200" r="58"/>
+        <circle class="pulse b" cx="200" cy="200" r="58"/>
+        <circle class="node" cx="80" cy="112" r="10"/>
+        <circle class="node" cx="320" cy="62" r="10"/>
+        <circle class="node" cx="336" cy="256" r="10"/>
+        <circle class="node" cx="150" cy="324" r="10"/>
+        <circle class="node" cx="200" cy="200" r="17"/>
+        <g fill="#fff3df">
+          <circle r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M80 112 L200 200 L336 256"/></circle>
+          <circle r="4"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M150 324 L200 200 L320 62"/></circle>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 01 PROBLEMA ===== -->
+<section class="light pad" id="problema" data-scrub>
+  <div class="wrap">
+    <p class="eyebrow">01 · Il problema</p>
+    <h2 class="rv">Nel bosco il telefono è un mattone</h2>
+    <p class="statement" id="statement">Niente celle. Niente 4G. ATAK senza rete è soltanto una mappa vuota.</p>
+    <div class="cards3">
+      <article class="pcard rv" style="--i:0"><svg aria-hidden="true"><use href="#ic-warn"/></svg><h3>Zero copertura</h3><p>Niente celle, niente 4G. ATAK senza rete è soltanto una mappa vuota.</p></article>
+      <article class="pcard rv" style="--i:1"><svg aria-hidden="true"><use href="#ic-globe"/></svg><h3>Alberi e colline</h3><p>La radio non passa ovunque: serve una rete che trovi la strada da sola.</p></article>
+      <article class="pcard rv" style="--i:2"><svg aria-hidden="true"><use href="#ic-people"/></svg><h3>Troppi giocatori</h3><p>Con 192 operatori che trasmettono la posizione il canale si ingorga, se non lo progetti.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 02 SOLUZIONE ===== -->
+<section class="dark pad" id="soluzione">
+  <div class="wrap">
+    <p class="eyebrow">02 · La soluzione</p>
+    <h2 class="rv">Una rete radio tutta nostra</h2>
+    <div class="split">
+      <div class="rv">
+        <p class="lead">Ogni operatore diventa un punto sulla mappa.</p>
+        <p class="muted" style="margin-top:16px;max-width:40ch">Senza SIM, senza internet, senza ripetitori fissi: i dispositivi si passano i messaggi l'uno con l'altro, come una staffetta.</p>
+      </div>
+      <div class="facts">
+        <div class="fact rv" style="--i:0"><b>LoRa</b><p>Radio a lungo raggio con consumi minimi.</p></div>
+        <div class="fact rv" style="--i:1"><b>869 MHz</b><p>Sotto-banda europea libera: 500 mW, duty cycle 10%.</p></div>
+        <div class="fact rv" style="--i:2"><b>Mesh</b><p>Più nodi, più copertura: nessun punto centrale che può cadere.</p></div>
+        <div class="fact rv" style="--i:3"><b>ATAK</b><p>Posizioni e punti tattici sulla mappa che già conosci.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 03 ARCHITETTURA (fermo immagine) ===== -->
+<section class="light tall" id="architettura" data-scrub>
+  <div class="stick">
+    <div class="wrap">
+      <p class="eyebrow">03 · L'architettura</p>
+      <h2>4 Tier, una sola rete</h2>
+      <div class="arch-grid">
+        <svg class="net" viewBox="0 0 520 300" role="img" aria-label="Schema della rete: tracker, drop-router, bridge RTO e sala operativa">
+          <g class="links">
+            <line x1="92" y1="90" x2="208" y2="150"/><line x1="92" y1="210" x2="208" y2="150"/>
+            <line x1="214" y1="150" x2="340" y2="150"/><line x1="346" y1="150" x2="454" y2="150"/>
+          </g>
+          <g class="g" data-t="0">
+            <circle class="t-amber" cx="40" cy="62" r="8"/><circle class="t-amber" cx="74" cy="44" r="8"/><circle class="t-amber" cx="92" cy="90" r="8"/><circle class="t-amber" cx="48" cy="112" r="8"/>
+            <circle class="t-amber" cx="40" cy="190" r="8"/><circle class="t-amber" cx="74" cy="238" r="8"/><circle class="t-amber" cx="92" cy="210" r="8"/><circle class="t-amber" cx="50" cy="256" r="8"/>
+            <text class="lbl" x="34" y="296">T1</text>
+          </g>
+          <g class="g" data-t="1">
+            <rect class="t-ink" x="196" y="138" width="24" height="24" transform="rotate(45 208 150)"/>
+            <rect class="t-ink" x="156" y="66" width="18" height="18" transform="rotate(45 165 75)"/>
+            <rect class="t-ink" x="156" y="216" width="18" height="18" transform="rotate(45 165 225)"/>
+            <text class="lbl" x="196" y="296">T2</text>
+          </g>
+          <g class="g" data-t="2">
+            <rect class="t-ink" x="322" y="132" width="36" height="36" rx="4"/>
+            <text class="lbl" x="328" y="296">T3</text>
+          </g>
+          <g class="g" data-t="3">
+            <circle cx="470" cy="150" r="36" fill="none" stroke="#111518" stroke-width="2"/>
+            <circle class="t-amber" cx="470" cy="150" r="20"/>
+            <text class="lbl" x="458" y="296">T4</text>
+          </g>
+        </svg>
+        <div class="tiers">
+          <div class="tier on" data-t="0"><span class="n">T1</span><h3>Tracker <span class="start">Si parte da qui</span></h3><p>Piccolo, a batteria, senza GPS: usa quello del telefono via Bluetooth.</p></div>
+          <div class="tier" data-t="1"><span class="n">T2</span><h3>Drop-router</h3><p>Ripetitore da lasciare nel bosco: allunga la rete dove serve.</p></div>
+          <div class="tier" data-t="2"><span class="n">T3</span><h3>Bridge RTO</h3><p>Il ponte tra i plotoni e la dorsale: comprime e inoltra le posizioni.</p></div>
+          <div class="tier" data-t="3"><span class="n">T4</span><h3>TOC</h3><p>Il cervello: server TAK e vista unificata per l'arbitraggio.</p></div>
+        </div>
+      </div>
+      <p class="arch-foot">Sviluppo a tappe: ogni Tier si valida prima di passare al successivo.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 04 TRACKER ===== -->
+<section class="dark pad" id="tracker">
+  <div class="wrap">
+    <p class="eyebrow">04 · Tier 1 · Il tracker</p>
+    <h2 class="rv">Tutto il necessario. Niente di più.</h2>
+    <div class="stats">
+      <div class="stat rv" style="--i:0"><b>~<span data-count="72">72</span> h</b><p>autonomia obiettivo, da confermare con i test</p></div>
+      <div class="stat rv" style="--i:1"><b><span data-count="1">1</span> tasto</b><p>lungo accende o spegne, breve mostra lo stato</p></div>
+      <div class="stat rv" style="--i:2"><b><span>0</span> LED</b><p>accesi in campo: niente luci che ti tradiscono</p></div>
+    </div>
+    <ul class="ticks">
+      <li class="rv">Cieco di proposito: il GPS lo mette il telefono, collegato via Bluetooth.</li>
+      <li class="rv">Radio LoRa con Meshtastic in ruolo TAK, pensata per ATAK.</li>
+      <li class="rv">Custodia stampata in 3D (ASA o PETG) e antenna compatta, da confermare con i test.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== COME FUNZIONA (fermo immagine) ===== -->
+<section class="light tall" id="percorso" data-scrub style="height:300vh">
+  <div class="stick">
+    <div class="wrap">
+      <p class="eyebrow">04 · Tier 1 · Come funziona</p>
+      <h2>Dalla tua posizione alla mappa, in 4 passi</h2>
+      <div class="flow">
+        <div class="track" id="track" aria-hidden="true">
+          <div class="rail"></div><div class="fill"></div>
+          <div class="st" style="left:0%"><svg><use href="#ic-phone"/></svg></div>
+          <div class="st" style="left:33.33%"><svg><use href="#ic-bt"/></svg></div>
+          <div class="st" style="left:66.66%"><svg><use href="#ic-radio"/></svg></div>
+          <div class="st" style="left:100%"><svg><use href="#ic-mesh"/></svg></div>
+          <div class="packet"></div>
+        </div>
+        <div class="steps">
+          <div class="step on"><b>1</b><h3>Il telefono</h3><p>ATAK sa dove sei grazie al GPS del telefono.</p></div>
+          <div class="step on"><b>2</b><h3>Bluetooth</h3><p>Il telefono passa la posizione al tracker con un collegamento a bassissimo consumo.</p></div>
+          <div class="step on"><b>3</b><h3>Radio LoRa</h3><p>Il tracker la trasmette in radio: un pacchetto di poche decine di byte.</p></div>
+          <div class="step on"><b>4</b><h3>La rete</h3><p>I nodi vicini lo rilanciano e la posizione arriva al resto della squadra.</p></div>
+        </div>
+      </div>
+      <p class="flow-foot">Si trasmette e basta, senza conferma di ricezione: così il canale resta libero.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PERCHÉ È CIECO ===== -->
+<section class="dark pad" id="cieco">
+  <div class="wrap">
+    <p class="eyebrow">04 · Tier 1 · Perché è cieco</p>
+    <h2 class="rv">Niente GPS a bordo, di proposito</h2>
+    <div class="why">
+      <article class="card rv" style="--i:0"><svg aria-hidden="true"><use href="#ic-bolt"/></svg><h3>Meno consumi</h3><p>Il chip GPS è tra i componenti più affamati di energia. Lasciarlo al telefono allunga la batteria del tracker.</p></article>
+      <article class="card rv" style="--i:1"><svg aria-hidden="true"><use href="#ic-wrench"/></svg><h3>Meno componenti</h3><p>Un pezzo in meno da comprare, montare e far funzionare: il nodo resta piccolo ed economico da replicare.</p></article>
+      <article class="card rv" style="--i:2"><svg aria-hidden="true"><use href="#ic-clock"/></svg><h3>Traffico sotto controllo</h3><p>La posizione parte ogni 60 secondi nei piccoli gruppi, ogni 4–5 minuti nei grandi eventi.</p></article>
+    </div>
+    <p class="compromise rv">Il compromesso: serve il telefono con ATAK acceso e collegato.</p>
+  </div>
+</section>
+
+<!-- ===== SUL CAMPO ===== -->
+<section class="light pad" id="campo">
+  <div class="wrap">
+    <p class="eyebrow">04 · Tier 1 · Sul campo</p>
+    <h2 class="rv">Pensato per resistere a un weekend</h2>
+    <div class="tiles">
+      <div class="tile rv" style="--i:0"><small>Autonomia</small><p>Obiettivo: circa 72 ore con una sola carica.</p></div>
+      <div class="tile rv" style="--i:1"><small>Un solo tasto</small><p>Pressione lunga: acceso o spento. Pressione breve: stato.</p></div>
+      <div class="tile rv" style="--i:2"><small>Luci spente</small><p>In campo i LED restano spenti: si accendono solo quando controlli lo stato.</p></div>
+      <div class="tile rv" style="--i:3"><small>Ricarica</small><p>Si ricarica nella sua custodia. Obiettivo: meno di 5 ore.</p></div>
+      <div class="tile rv" style="--i:4"><small>Antenna</small><p>La NUB, compatta, è la scelta ideale. La confermiamo dopo i test.</p></div>
+      <div class="tile rv" style="--i:5"><small>Custodia</small><p>Stampata in 3D in ASA o PETG, a incastro, per l'uso sul campo.</p></div>
+    </div>
+    <p class="note">Obiettivi di progetto, da confermare con i test.</p>
+  </div>
+</section>
+
+<!-- ===== VARIANTE GPS ===== -->
+<section class="dark pad" id="variante">
+  <div class="wrap">
+    <p class="eyebrow">04 · Tier 1 · Variante opzionale</p>
+    <h2 class="rv">Tier 1 con GPS a bordo</h2>
+    <div class="table-box rv">
+      <table>
+        <thead><tr><th scope="col"><span class="muted">Confronto</span></th><th scope="col">Tier 1 base</th><th scope="col" class="opt">Tier 1 con GPS (opzionale)</th></tr></thead>
+        <tbody>
+          <tr><td>Posizione</td><td>Dal GPS del telefono, via Bluetooth</td><td>Dal modulo GPS a bordo</td></tr>
+          <tr><td>Telefono</td><td>Serve, con ATAK acceso</td><td>Non serve per rilevare la posizione</td></tr>
+          <tr><td>Autonomia</td><td>Obiettivo circa 72 h</td><td>Più bassa, da misurare</td></tr>
+          <tr><td>Componenti</td><td>Meno parti, meno costo</td><td>Un modulo in più, costo maggiore</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted rv" style="margin-top:32px;font-size:18px">Il tracker base resta la strada principale. La variante con GPS la valutiamo dopo i test.</p>
+  </div>
+</section>
+
+<!-- ===== TIER 2 E 3 ===== -->
+<section class="light pad" id="tier23">
+  <div class="wrap">
+    <p class="eyebrow">05 · Tier 2 e Tier 3</p>
+    <h2 class="rv">Dove la radio non arriva, la rete cresce</h2>
+    <div class="duo">
+      <article class="big-card rv" style="--i:0"><small>T2 · Drop-router</small><h3>Lo lasci cadere, la rete si allunga</h3>
+        <ul><li>Cella 18650 in custodia stagna IP67</li><li>Antenna collineare o dipolo da 3–5 dBi</li><li>Ruolo ROUTER: rilancia i pacchetti, Bluetooth spento</li></ul></article>
+      <article class="big-card rv" style="--i:1"><small>T3 · Bridge RTO</small><h3>Un cervello a due core</h3>
+        <ul><li>ESP32-S3: un core ascolta il plotone e comprime le posizioni</li><li>L'altro le inoltra alla dorsale, via LoRa o Wi-Fi HaLow (802.11ah)</li><li>Custodia stile PRC con morsetti WAGO</li></ul></article>
+    </div>
+    <p class="note">In progettazione, dopo la validazione del Tier 1.</p>
+  </div>
+</section>
+
+<!-- ===== TIER 4 TOC ===== -->
+<section class="dark pad" id="toc">
+  <div class="wrap">
+    <p class="eyebrow">06 · Tier 4 · TOC</p>
+    <h2 class="rv">La sala operativa</h2>
+    <div class="split">
+      <div class="rv">
+        <p class="lead">Un Raspberry Pi, OpenTAKServer e la mappa dell'intera esercitazione.</p>
+        <p class="muted" style="margin-top:16px;max-width:40ch">Qui arrivano le posizioni di tutti i plotoni e qui si dirige il gioco.</p>
+      </div>
+      <div class="toc-items">
+        <div class="toc-item rv" style="--i:0"><svg aria-hidden="true"><use href="#ic-lock"/></svg><p>Gateway radio separati per fazione: ognuno vede solo i suoi.</p></div>
+        <div class="toc-item rv" style="--i:1"><svg aria-hidden="true"><use href="#ic-people"/></svg><p>Gruppi di contatto e data package pronti per ogni plotone.</p></div>
+        <div class="toc-item rv" style="--i:2"><svg aria-hidden="true"><use href="#ic-globe"/></svg><p>Vista unificata riservata a Game Master e Direzione Esercitazione.</p></div>
+        <div class="toc-item rv" style="--i:3"><svg aria-hidden="true"><use href="#ic-bolt"/></svg><p>Alimentazione autonoma con power station LiFePO4.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 07 SCALABILITÀ (fermo immagine) ===== -->
+<section class="amber tall" id="scala" data-scrub style="height:260vh">
+  <div class="stick">
+    <div class="wrap">
+      <p class="eyebrow">07 · Scalabilità</p>
+      <h2>Dalla pattuglia al grande evento</h2>
+      <div class="scale-grid">
+        <div>
+          <div class="count" id="count" aria-label="192 operatori">192</div>
+          <div class="count-lbl">Operatori</div>
+          <div class="factions" id="factions" aria-hidden="true"></div>
+        </div>
+        <div class="scale-text">
+          <b>8 plotoni × 3 squadre × 8 operatori, in 2 fazioni.</b>
+          <p>4 slot radio da 62,5 kHz: 2 per fazione, così le due reti non si disturbano.</p>
+          <p>Chiavi di cifratura separate per fazione.</p>
+          <p>Stessi nodi dalla pattuglia da 8 al grande evento: cambia solo il profilo di rete (S per piccoli gruppi, L per i grandi numeri).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 08 STATO ===== -->
+<section class="dark pad" id="stato">
+  <div class="wrap">
+    <p class="eyebrow">08 · Stato del progetto</p>
+    <h2 class="rv">Si parte dal Tier 1</h2>
+    <div class="status">
+      <div class="col rv" style="--i:0"><span class="badge">Completato</span><h3>Fatto</h3><ul><li>Architettura a 4 Tier</li><li>Piano di banda e profili S/L</li><li>Hardware di test ordinato</li></ul></div>
+      <div class="col now rv" style="--i:1"><span class="badge">Adesso</span><h3>In corso</h3><ul><li>Arrivo dei kit di prova per il tracker</li><li>14 test al banco: antenne, autonomia, ricarica, tasto</li><li>Misure reali per validare ogni stima</li></ul></div>
+      <div class="col rv" style="--i:2"><span class="badge">Prossimo</span><h3>Dopo</h3><ul><li>Validazione del Tier 1 con il club</li><li>Tier 2, 3 e 4, uno alla volta</li><li>Prove sul campo</li></ul></div>
+    </div>
+    <p class="final rv">Ogni numero è una stima, finché non lo misuriamo.</p>
+  </div>
+</section>
+
+<footer class="dark">
+  <div class="wrap"><span>O.M.N.I.S. · TF Whiplash</span><span>Off-grid Mesh Network for Integrated Scenarios</span></div>
+</footer>
+
+<script>
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.documentElement.classList.add("js");
+
+  // --- comparsa delle sezioni ---
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".rv").forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.top < innerHeight) el.classList.add("in"); else io.observe(el);
+  });
+
+  // --- frase del problema: le parole si accendono una alla volta ---
+  const st = document.getElementById("statement");
+  st.innerHTML = st.textContent.split(" ").map((w) => `<span class="w">${w}</span>`).join(" ");
+  const words = [...st.querySelectorAll(".w")];
+
+  // --- 192 operatori: 2 fazioni × 4 plotoni × 3 squadre × 8 ---
+  const fx = document.getElementById("factions");
+  const dots = [];
+  ["Fazione A", "Fazione B"].forEach((name, f) => {
+    const col = document.createElement("div");
+    col.className = "faction" + (f ? " b" : "");
+    col.innerHTML = `<small>${name}</small>`;
+    for (let p = 0; p < 4; p++) {
+      const plt = document.createElement("div"); plt.className = "plt";
+      for (let s = 0; s < 3; s++) {
+        const sq = document.createElement("div"); sq.className = "sq";
+        for (let o = 0; o < 8; o++) { const d = document.createElement("i"); d.className = "dot on"; sq.appendChild(d); dots.push(d); }
+        plt.appendChild(sq);
+      }
+      col.appendChild(plt);
+    }
+    fx.appendChild(col);
+  });
+  // ordine di accensione: squadra per squadra, alternando le fazioni
+  const order = [];
+  for (let k = 0; k < 96; k++) { order.push(dots[k], dots[96 + k]); }
+
+  // --- contatori ---
+  const cio = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting || reduce) return;
+    const el = e.target, to = +el.dataset.count, t0 = performance.now();
+    const tick = (t) => { const k = Math.min(1, (t - t0) / 1400); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick); cio.unobserve(el);
+  }), { threshold: .6 });
+  document.querySelectorAll("[data-count]").forEach((el) => cio.observe(el));
+
+  if (reduce) return;
+
+  // --- avanzamento legato allo scorrimento ---
+  const scrubs = [...document.querySelectorAll("[data-scrub]")];
+  const tiers = [...document.querySelectorAll(".tier")];
+  const groups = [...document.querySelectorAll(".net .g")];
+  const steps = [...document.querySelectorAll(".step")];
+  const stations = [...document.querySelectorAll(".track .st")];
+  const track = document.getElementById("track");
+  const count = document.getElementById("count");
+  const bar = document.querySelector(".progress");
+  const clamp = (v) => Math.max(0, Math.min(1, v));
+
+  function progressOf(el) {
+    const r = el.getBoundingClientRect(), vh = innerHeight;
+    const travel = r.height - vh;
+    if (travel > 40) return clamp(-r.top / travel);          // sezione "fermo immagine"
+    return clamp((vh - r.top) / (vh + r.height));             // sezione normale
+  }
+
+  let ticking = false;
+  function update() {
+    ticking = false;
+    const doc = document.documentElement;
+    bar.style.setProperty("--read", (scrollY / Math.max(1, doc.scrollHeight - innerHeight)).toFixed(4));
+    for (const el of scrubs) {
+      const p = progressOf(el);
+      el.style.setProperty("--p", p.toFixed(4));
+      if (el.id === "problema") {
+        const n = Math.round(clamp((p - .12) / .38) * words.length);
+        words.forEach((w, i) => w.classList.toggle("on", i < n));
+      } else if (el.id === "architettura") {
+        const a = Math.min(3, Math.floor(p * 4.2));
+        tiers.forEach((t, i) => t.classList.toggle("on", i === a));
+        groups.forEach((g, i) => { g.classList.toggle("on", i === a); g.classList.toggle("past", i < a); });
+      } else if (el.id === "percorso") {
+        const fp = clamp((p - .08) / .8);
+        track.style.setProperty("--fp", fp.toFixed(4));
+        const reached = fp * 3 + .02;
+        stations.forEach((s, i) => s.classList.toggle("on", i <= reached));
+        steps.forEach((s, i) => s.classList.toggle("on", i <= reached));
+      } else if (el.id === "scala") {
+        const k = clamp((p - .05) / .75);
+        const n = Math.round(k * 192);
+        order.forEach((d, i) => d.classList.toggle("on", i < n));
+        count.textContent = n;
+      }
+    }
+  }
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", onScroll);
+  update();
+})();
+</script>
+
+</body>
+</html>
