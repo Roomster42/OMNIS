@@ -98,6 +98,10 @@
   .path-ui .nw { white-space: nowrap; }
   .store { display: inline-block; margin-top: 8px; font: 600 14px system-ui, sans-serif; color: var(--accent);
     border: 1px solid var(--accent); border-radius: 8px; padding: 6px 12px; text-decoration: none; }
+  button.store { background: none; cursor: pointer; }
+  button.store.primary { background: var(--accent); color: var(--accent-ink); }
+  .pkg { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pkg-msg { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
   .alert { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; font-size: 14px;
     background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); }
   .alert b { font-weight: 700; }
@@ -201,7 +205,7 @@
 
   <!-- Bivio -->
   <section id="screen-choice">
-    <p class="lead">Sei obiettivi ti separano dal primo contatto radio con la tua squadra. Per iniziare, indica il telefono che userai sul campo.</p>
+    <p class="lead">Pochi obiettivi ti separano dal primo contatto radio con la tua squadra. Per iniziare, indica il telefono che userai sul campo.</p>
     <div class="choice">
       <button class="path" data-path="ios">
         <span class="pic"><svg width="30" height="30"><use href="#i-phone"/></svg></span>
@@ -261,7 +265,6 @@ const LINKS = {
   itak: "https://apps.apple.com/app/id1561656396",
   meshtasticAndroid: "https://play.google.com/store/apps/details?id=com.geeksville.mesh",
   atak: "https://play.google.com/store/apps/details?id=com.atakmap.app.civ",
-  atakPlugin: "https://github.com/meshtastic/ATAK-Plugin/releases",
 };
 // I percorsi di menu lunghi possono andare a capo solo dopo una freccia.
 const ui = (t) => `<span class="path-ui">${t.split(" → ").map((s) => `<span class="nw">${s}</span>`).join(" → ")}</span>`;
@@ -297,6 +300,108 @@ function decodeKit(hash) {
   return d;
 }
 const KIT = decodeKit(location.hash);
+
+// ---------- pacchetto TAK del giocatore (creato su questo telefono, nulla viene inviato) ----------
+// Collega l'app TAK al server TAK interno dell'app Meshtastic (127.0.0.1:8089, TLS).
+// I certificati sono quelli predefiniti inclusi nelle app Meshtastic (iOS e Android usano gli stessi;
+// scadenza aprile 2028). I nomi dei file seguono il pacchetto esportato da Meshtastic iOS:
+// OmniTAK cerca il certificato con un'etichetta uguale al nome del file.
+// ATAK applica anche nominativo, colore e ruolo; iTAK e OmniTAK leggono solo il server.
+const TAK_CERTS = {
+  "truststore.p12": "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",
+  "iPhone.p12": "MIIOWQIBAzCCDhcGCSqGSIb3DQEHAaCCDggEgg4EMIIOADCCCLcGCSqGSIb3DQEHBqCCCKgwggikAgEAMIIInQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQMwDgQIzfF9ZGq+ircCAggAgIIIcNyXw99PwJ5yQl/V0tYSf+qG5qMOOVn9RAOkwR1GbIS/erQUoAXIqjyS0P/A+dTLmlhaYzTvlI9ZJXKuv2l5K4NfUTAEEbPF3iNJ8kHMgr14dPHyTXspbVcPkyG+VuhTFvQYbKRMSCVfU6AfMosAVOwqizY3aerXQyeHbpqPHffETKrrRJ0aLIuLXNcNQCm9cSWOcoaqPR3zwKdA1SZ/bVsCHIL0zEMnMnF8KeInrfhIiP5Xpahwzt3jgV3kwH27WfhU3dIXTKw1LXKo2OvMZEPKOnp4crBLHAZpK3acTuC9muoWSSwojHkCZ5u6SOj9xVd1n0qfuyC/5zeV9miEsQ/+yOcMtxpatnyzSHV0ozHwoHU+tl3Q5NmXV7ZIW3yDZwintBBq2u9i/h5+6D31AjF3q9KDn56kkQILTWYV9YS9vUWUdEC7widy9LfvVE9yTN4BuLfcYMdQmyIAdUS8BQR2tXz9zl4cW65gF5Mw7d2pkirF5NV7iTTB+xmPxs2YWT/rOtAISj0R2MhFwPwInbOb6ZMc39No3VekuvZJS+kebpOVTNgGodO8vGqt/57fU7e4L1JHWhPcZmjZO9E/5MyamoV08UYzsvMwFTzM/eO/R58EZQw2ZpyjFryrsLZDlM9PHIn/PrKsN5pZv200UzyD7XEgoaZXwrY2Jxq70kEIBQ06sfSlXWqSdCi3owPbvk6bmsy+JEKXVN1MA5cimwbncAoE87bccAH7FSVEUKKJ/8bCOLPJ07mAat+F4tsmywELBCpWJfIazwThOxaSRIt1FA3Y3ZWtQgVPzMudzOdmaqxT9KlNK7wGsFwpVf+bLUnEVmLeOTonHKkEl7h+SE0pjYOwpJaNUIQYL90i131VimyZ2LpGmP1glyRCOnMlw9N2btAuAwVNqrHcA8Uyd4vtdZVFlPt/RlScma7OifTqI8IT8DFYDFSKjUgYIrCtJkrHK/KUWRbygnoGq/aykNQ9r+AlbDA/kbQDYqui5gaQhZiLDIFMcDYTvhw+e71qde9wD+1a32TGkXgX3X2YJgwjYm5l8x981vLtKzJXM1txFg7PyQv4luTri/Zo0NrLkDekeIIszAVJ1bTmKddh7wwlnrJAgHSwF8IDLEl3d4TA3Vfw15edSZ82/BpxQTcpWAsWtjoBvJbn+8d09WUXZnoOPGnQ0lXH6jb6kykXBrxt5pxDMe0E4MHnDB564wNVDqjMKWVPmIk200sDhHV4Z5LhXngodlOlCnpH7+4EM9/uhoQAiGkRYU0a/fR4kEyc6zCfBrOpvayfQmoEbza7Ul2rmpszd8U184C/QG6HY77ihDkXOU3tP4XNOgsA0YeI+/3wCII3td2vWLwjDQuxtqGSdwlCOOhsSaBsO8FFK+QSmNGf//VhyAjWIebGF61QeoNmHmJOQD2C/2nJuEzeSae03Q3GbW0Mflo4bVek9+HoF1Hf93bgjP1epxdUQqk4K8ts4U0jyoA4KwRdf30lT/lZtCF2gSrW9d49anCXtP53U1lYqrUYSxwgfexNiaK2l7+1+eAnmRgTE4OtnCeSUEBWWxYmH4p85EQOEPT3RlSEOA983qoxr1cQJB8YPtsyN3qvGfumAzwRXJVINKNDTvO6A0DXfcNGTITsn2j/wwHNFueNFnuCxhZXQsrqmDesHp+z5d1fZ7NjMTNIhnJMAJe6JAqUOuJkrI/3JJ5QL1w+hF5zduXvkHRfqlTRx+6I/8WSZ1lTkuN7ryUExfnwHTa6pQVTm3ClJ9ltk61g7iC43lEDcvP6W/pEyxQcGqdKnVXEo6LfVRGYgpqS7fQuVb+SUwJwMedc5we4xAuGuWmTXrQ78Uwzjm8meZumAk3i4ml5FqL68JzhBApAFT8JIZOai4e/CNQhIoPPYeEPjWRrAl3xTZ8FHVlzaF4C5edaHIhSc1Hs+Mf3eZc625ezuf4uNbsKPEDjzMVG/5n3/kKeob5tlBfBtOR+P00TyjM+7qdNufLMOQnxfqUs+2YFbTk27psviIt2k4PxFdO9TaevAJqTh1fKq2UZAFDleZzjEZH7MOqK0bverWUOHD22d7bTUb7iB1DebJFutbhYJ+vC5lQhKdI4ihb/QdLQr22ZGKYqnma1VWjumAWsISeaNAbRnSSNeTG8x9Y8hCEpK2s65Pf64dAdAdmyQRUffRbVkfwXDU7G+lnyQOEi4SD30FXRRuj4LXtxiE3SccR6mn3gMVaDltRG3zQIj+rFqduo+7ldG7DlpZpa2etw0pVeiPZg2sCnYI3uuufz7XcTltyvC5RtswjJhlM2r0RT92FhItQagr24NbaawwoXlO85iLSyUw3vawlP3jKvoCJJykNOOCuaKCUMikX7WDP4/0tzf44EMUxjCiwc5VnYW7LCtg8cdS0RIBwOqtGAy/H6sMO/Hf+oRsnGkA/Mja9bm5RBlToSUyKpNi4SUfcJ4c+69Rb0zCKnrHrP6FYnNFFIiR4/0nq10EZmrfndSHNk5H81R4YBoE68LPEsL3uCNBzFU12SzipNktmAWQiFFVzwh/1rq/MILapn3W9eadypysxicFyvM3lKXo51JXyuxoS8MdJtoCG5uESPU2u04/RA5TPXyxt+VNt2Ugj2XCxHa3dXG+R36FOYKuX2b7kx14fJhgx7pvGy185aIDXKUHELjbOgo+UYcpYWV0k0/fwH+2yX7v5yevxeNZooPGCmJeHB2ccQKG0+bWoQ7cG4f8yf2QRfhGDxBBb3lqH+5vkVX3VgnGO7LaqAAAU62CnBI6y8wDmgYm1t6vFRysQ4lrGTxbiYbYuX/Ys8tDXg6maI0IwvFZBTHh2gQlxUG+UfZG6szj5r4jTExdevYe4LvfcareJjFZFBkrxmb86SyL0zLgleYjCCBUEGCSqGSIb3DQEHAaCCBTIEggUuMIIFKjCCBSYGCyqGSIb3DQEMCgECoIIE7jCCBOowHAYKKoZIhvcNAQwBAzAOBAjnFv38JY7lzgICCAAEggTI0bxilocGiRSozmspD1xGySdygj+EiPw0PZ3LO9Y2Qq1EHhExMHXbftUSNbO8kq8Dfaln6B4lw3ZsBWmtfc3IzZe2C1acFCyoZTnwofRlFu52W0WmOYg5TrXw9nCW3xc6IhIsLWyOtm1uhyX8f19n72/dQjuHHG5B0Jk/kn/SiENNeWn1qgqauXFCrnXz4KMgjFzMxWEIl9gS0ef6wOugl7IGcUM9Aa64qczrfBR4hQVk8jrWLShjLdiLFB2ZUD3fUUc0QM3Hxi0uvHFbqvFrvxjo2zK6oCl1K5wPmV81sXo3B+OBJXANMC5qiudRhmLF/N+e6rJcWW51K9CYHttkk6VKdwrUkJQ7qU5z/UV1ZLIEU3fhBRrsMpT5RcpUkFxF+XVlc9kQFkySBI2zP1bfDLJA75mbQPLUaLAN6kfZbXXMdPMMBiMD6W9dDRcCiVsRz24/GyU853hVvAFsaoQs10ixxz+jRN/QUyIQSLwHobKUZB4/g6qme6CUKLGZMxOkl/WkzLUlF2Ho5pdBZZgkzQlxYUkGP1rjdeddYghNoEq7wymRunebfzk48JWlQkh8LXY/3fhE/otGpiToC6TW14q0b39bGIs4bGR19kHfzE8mV99q9URdJMvYfl+w2etCqdpizP9a6dIdM+IvGISJ7k9Q9/B66299iv1fd+j9qpqi4Xh75ogn2FkM4OlME9sEWQTB1YFxQqQc1hykIV6YT+pE00qSWE4evkoy7EekFAIIduooKfsP+kvOXOJOEYsMQQ9Ca8JLDSFKaVTYFwb+sJM9zoyWep/i2oHWDBv6PWobGnVGFr9qMshua192V6tbA6QQEu9MIETh4nSZnTWV2oJMcPi3U1Eyidi9KZGXcgWkiY2wwhQ2TGE/qrOvZSVG1J1DAD/09Yd+OzAXZ6LC49MQpeLWkwABkhToZcBJtjBVmmJhk2O2XGhkEBMZCn5ey7h3s3mUnBrrMQMRplF8nNBXG22IpbpbjJdftAfm7X7EnIOKBYGKxBx+0Mazy6+d82i60jRLdILvEyUnSFM/wXRg4VgoqWWpYOJuOn3qD76Sqwybkd06y6LePbjaVO+vRXPGY9KK1vXxO3I0jTOeV43y/EFtSBUd9goRiGbmVwfJ8TleRC2sukrzHAjGRayDWhnh0j9dDaywqFijBfyXxD1pIHx6UQlv7Pk4mtbN5YPD1A4NojFID9hRzHBkV79tdoM1FtC3UHQvB6aJVMpDb8+lCg62Er1tYs0pIlho/MiitKi0KN5ndSH1hNshtWzmGMQAmHmpxg0TpLVBuKG/CAck6oXkt4CUBTAjbVc9zyejfuESF4L46+PwrLHnw/4qM7jgQmV+Ut0/yNkqmR5A9QwI8wNG1Ujtwoo7GaSGXc+i8F5AyhkfD+o36lFg9zx1w0EUTZGCGm9QoDx6IM4Un6TT7ugsXmMAw7Gg1Pe/4AO1GbH6WEltbUSkEv5mGc6UvzAypFWvyPhZzqa0d45vhIjcD5BkOYtCg/3zOt7FIO9rq2rGIx120C1Sq9WFat9VBaezlrgvt20WDDkWgNXbq2hIgH/oqkaj1ffMD3iPW6yME1DERYbA/b+OsibS+BUN8ykm5b44Zkg8yjtbTaZA75JF+RVM8uTzMSUwIwYJKoZIhvcNAQkVMRYEFNmJOJfJ0IgSDYU9jLd6atwuQumLMDkwITAJBgUrDgMCGgUABBRmgSDlw5tCaICOTE3b03x+IQw9/AQQl7mBqwnPf1M6XGZ9iEv/6QICCAA=",
+};
+const ATAK_TEAM = { DarkBlue: "Dark Blue", DarkGreen: "Dark Green" }; // gli altri colori hanno lo stesso nome
+const xml = (x) => String(x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+function crc32(b) { let c = 0xffffffff; for (const x of b) c = CRC_TABLE[(c ^ x) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+// Archivio ZIP senza compressione (metodo "store"): basta per pochi kB e lo leggono tutte le app.
+function zipStore(files) {
+  const enc = new TextEncoder(), parts = [], central = [];
+  let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = f.data, crc = crc32(data);
+    const head = new DataView(new ArrayBuffer(30));
+    [[0, 0x04034b50, 4], [4, 20, 2], [8, 0, 2], [10, 0, 2], [12, 0x21, 2], [14, crc, 4], [18, data.length, 4], [22, data.length, 4], [26, name.length, 2]]
+      .forEach(([o, v, n]) => n === 4 ? head.setUint32(o, v, true) : head.setUint16(o, v, true));
+    const cen = new DataView(new ArrayBuffer(46));
+    [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [10, 0, 2], [12, 0, 2], [14, 0x21, 2], [16, crc, 4], [20, data.length, 4], [24, data.length, 4], [28, name.length, 2], [42, offset, 4]]
+      .forEach(([o, v, n]) => n === 4 ? cen.setUint32(o, v, true) : cen.setUint16(o, v, true));
+    parts.push(new Uint8Array(head.buffer), name, data);
+    central.push(new Uint8Array(cen.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  const size = central.reduce((a, b) => a + b.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, size, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/zip" });
+}
+function takPackage() {
+  const enc = new TextEncoder();
+  const id = KIT ? KIT.n.replace(/[^A-Za-z0-9_-]/g, "") || "Operatore" : "Squadra";
+  const entry = (k, v, cls = "String") => `    <entry key="${k}" class="class java.lang.${cls}">${xml(v)}</entry>`;
+  const prefs = [
+    entry("displayServerConnectionWidget", "true", "Boolean"),
+    entry("caLocation", "cert/truststore.p12"), entry("caPassword", "meshtastic"),
+    entry("certificateLocation", "cert/iPhone.p12"), entry("clientPassword", "meshtastic"),
+    ...(KIT ? [entry("locationCallsign", KIT.n), entry("locationTeam", ATAK_TEAM[KIT.c] || KIT.c), entry("atakRoleType", ROLES[KIT.r])] : []),
+  ];
+  const pref = `<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<preferences>
+  <preference version="1" name="cot_streams">
+${entry("count", "1", "Integer")}
+${entry("description0", "OMNIS LoRa (Meshtastic)")}
+${entry("enabled0", "true", "Boolean")}
+${entry("connectString0", "127.0.0.1:8089:ssl")}
+  </preference>
+  <preference version="1" name="com.atakmap.app_preferences">
+${prefs.join("\n")}
+  </preference>
+</preferences>
+`;
+  const uid = "OMNIS-" + id + "-" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36));
+  const manifest = `<MissionPackageManifest version="2">
+  <Configuration>
+    <Parameter name="uid" value="${xml(uid)}"/>
+    <Parameter name="name" value="OMNIS_${xml(id)}"/>
+    <Parameter name="onReceiveDelete" value="true"/>
+  </Configuration>
+  <Contents>
+    <Content ignore="false" zipEntry="omnis.pref"/>
+    <Content ignore="false" zipEntry="truststore.p12"/>
+    <Content ignore="false" zipEntry="iPhone.p12"/>
+  </Contents>
+</MissionPackageManifest>
+`;
+  const bin = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const blob = zipStore([
+    { name: "manifest.xml", data: enc.encode(manifest) },
+    { name: "omnis.pref", data: enc.encode(pref) },
+    ...Object.entries(TAK_CERTS).map(([name, b64]) => ({ name, data: bin(b64) })),
+  ]);
+  return { blob, name: `OMNIS_${id}.zip` };
+}
+function downloadPackage() {
+  const { blob, name } = takPackage();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  return name;
+}
+// Condivisione diretta all'app TAK quando il telefono lo consente, altrimenti download.
+async function sharePackage() {
+  const { blob, name } = takPackage();
+  const file = new File([blob], name, { type: "application/zip" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return "shared"; }
+    catch (e) { if (e && e.name === "AbortError") return "aborted"; }
+  }
+  downloadPackage();
+  return "downloaded";
+}
+const PKG = `<span class="pkg"><button class="store primary pkg-share" type="button">Apri con l'app TAK</button><button class="store pkg-dl" type="button">Scarica il file</button></span><span class="pkg-msg"></span>`;
 // Testi che si personalizzano quando il link porta i dati del giocatore.
 const T = KIT ? {
   channel: `il canale principale si chiama <b>${esc(KIT.ch)}</b>`,
@@ -304,12 +409,14 @@ const T = KIT ? {
   callsign: `imposta il nominativo <b>${esc(KIT.n)}</b> (callsign)`,
   colorRole: `Scegli il colore squadra <b>${TEAM_COLORS[KIT.c][0]}</b> (${KIT.c}) e il ruolo <b>${ROLES[KIT.r]}</b>.`,
   index: `<b>0</b>, cioè il canale principale <b>${esc(KIT.ch)}</b>`,
+  pkgName: `il tuo pacchetto <b>OMNIS_${esc(KIT.n.replace(/[^A-Za-z0-9_-]/g, "") || "Operatore")}</b>`,
 } : {
   channel: "il canale principale ha il nome della tua squadra",
   pick: "scegli il <b>canale della tua squadra</b>",
   callsign: "imposta il tuo <b>nominativo</b> (callsign)",
   colorRole: "Scegli il <b>colore squadra</b> e il <b>ruolo</b> concordati con il team.",
   index: "<b>0</b>, cioè il canale principale della squadra",
+  pkgName: "il <b>pacchetto della squadra</b> (apri questa pagina dal link personale del manualetto per avere anche il tuo nominativo)",
 };
 
 const PATHS = {
@@ -321,60 +428,61 @@ const PATHS = {
         icon: "i-pack", code: "Obiettivo 1", title: "Equipaggiamento",
         brief: "Due app dall'App Store. Sono il tuo equipaggiamento radio.",
         tasks: [
-          `<b>Meshtastic</b>: parla con il nodo via Bluetooth.<br><a class="store" href="${LINKS.meshtasticIos}" target="_blank" rel="noopener">Apri l'App Store</a>`,
+          `<b>Meshtastic</b>: parla con il nodo via Bluetooth e fa da ponte radio.<br><a class="store" href="${LINKS.meshtasticIos}" target="_blank" rel="noopener">Apri l'App Store</a>`,
           `<b>iTAK</b>: la mappa tattica della squadra.<br><a class="store" href="${LINKS.itak}" target="_blank" rel="noopener">Apri l'App Store</a>`,
         ],
       },
       {
         icon: "i-antenna", code: "Obiettivo 2", title: "Aggancio al nodo",
-        brief: "Colleghi il telefono al tuo nodo radio. Il nodo accetta un solo telefono alla volta.",
+        brief: "Colleghi il telefono al tuo nodo radio. Il nodo è già configurato: canale e chiave non vanno toccati.",
         tasks: [
           "Accendi il nodo e tienilo vicino al telefono.",
           `Apri <b>Meshtastic</b>, vai su ${ui("Connetti")} e tocca il tuo nodo nell'elenco.`,
-          "Inserisci il <b>PIN</b> quando iOS lo chiede: lo trovi sull'etichetta del kit o sul display del nodo.",
+          "Inserisci il <b>PIN</b> che compare sul <b>display del nodo</b> quando iOS lo chiede.",
+          `Quando Meshtastic chiede la posizione scegli <b>Consenti sempre</b> (oppure ${ui("Impostazioni iOS → Meshtastic → Posizione → Sempre")}): così l'app resta attiva anche a schermo spento.`,
           `In ${ui("Impostazioni → Canali")} ${T.channel}.`,
         ],
+        alert: "<b>Il nodo accetta un solo telefono alla volta.</b> Se un'altra app (o il configuratore) è collegata al nodo, scollegala prima.",
         help: [
           "Il nodo non compare: spegnilo e riaccendilo, poi riprova. Se è collegato a un altro telefono, scollegalo da lì.",
-          "Il PIN viene rifiutato: in Impostazioni iOS → Bluetooth tocca la «i» accanto al nodo, scegli «Dissocia questo dispositivo» e ricollegalo dall'app.",
+          "Il PIN viene rifiutato o la connessione fallisce subito: in Impostazioni iOS → Bluetooth tocca la «i» accanto al nodo, scegli «Dissocia questo dispositivo» e ricollegalo dall'app. Succede sempre dopo un aggiornamento del nodo.",
+          "Il nome del canale non è quello della tua squadra: non modificarlo. Contatta chi ti ha fornito il kit.",
         ],
       },
       {
         icon: "i-link", code: "Obiettivo 3", title: "Ponte radio",
-        brief: "iTAK non parla direttamente con il nodo. È l'app Meshtastic a fare da ripetitore tra i due: ora lo accendi.",
+        brief: "iTAK non parla direttamente con il nodo: è l'app Meshtastic a fare da ponte. Basta un interruttore.",
         tasks: [
-          `In Meshtastic apri ${ui("Impostazioni → TAK Server")}.`,
-          `Attiva ${ui("Enable TAK Server")}.`,
-          `Nel selettore del canale ${T.pick}.`,
-          "L'indicatore di stato mostra il server <b>attivo</b>.",
+          `In Meshtastic apri ${ui("Impostazioni → Server TAK")} e attiva ${ui("Abilita il Server TAK")}.`,
+          "Lo stato del server diventa <b>verde</b>: «Running on port 8089 (TLS)».",
+          `Il ${ui("Indice canale TAK")} mostra il canale della squadra: lascialo così.`,
         ],
-        alert: "<b>Non premere «Fix Channel»</b> se compare: cambierebbe la chiave del canale e usciresti dalla rete della tua squadra. Segnalalo a chi ti ha fornito il kit.",
+        alert: "<b>Non toccare il resto</b> di questa pagina: lascia spento «Conversore Mesh a CoT» e non premere «Ripristina il Server» né «Fix Channel». Cambierebbero certificati o canale e il pacchetto del prossimo obiettivo non funzionerebbe più.",
         help: [
-          "Il server resta in sola lettura: il canale non è configurato per il team. Contatta chi ti ha fornito il kit.",
+          "Lo stato non diventa verde: controlla che il nodo sia collegato (Obiettivo 2), poi spegni e riattiva il server.",
+          "«Caricamento configurazione TAK dal nodo» resta in caricamento: non serve, prosegui.",
         ],
       },
       {
-        icon: "i-crate", code: "Obiettivo 4", title: "Trasferimento ordini",
-        brief: "Un pacchetto spiega a iTAK dove trovare il ponte radio. Lo esporti da Meshtastic e lo carichi in iTAK.",
+        icon: "i-crate", code: "Obiettivo 4", title: "Ordini di missione",
+        brief: `Un pacchetto spiega a iTAK dove trovare il ponte radio. È ${T.pkgName}: lo crea questa pagina, sul tuo telefono.`,
         tasks: [
-          `Nella schermata ${ui("TAK Server")} di Meshtastic esporta il <b>data package</b> e salvalo in <b>File</b>.`,
-          `Apri <b>iTAK</b> e vai su ${ui("Settings → Network → Servers")}.`,
-          `Tocca ${ui("+")}, scegli ${ui("Upload Server Package")} e seleziona il pacchetto salvato.`,
-          "Il server compare nell'elenco con l'indicatore di <b>connessione attiva</b>.",
+          `Tocca <b>Apri con l'app TAK</b> e scegli <b>iTAK</b>. Se iTAK non compare tra le app, usa <b>Scarica il file</b>.<br>${PKG}`,
+          `Se hai scaricato il file: in <b>iTAK</b> apri ${ui("Settings → Network → Servers → +")}, scegli ${ui("Upload Server Package")} e seleziona il file nella cartella <b>Download</b>.`,
+          "Il server <b>OMNIS LoRa (Meshtastic)</b> compare nell'elenco come <b>Connected</b>.",
         ],
         alert: "<b>Meshtastic deve restare aperta</b>, anche in secondo piano: se iOS la chiude, il ponte radio si spegne. Disattiva il Risparmio energetico durante la partita.",
         help: [
-          "iTAK non si connette: torna su Meshtastic, controlla che il nodo sia collegato e il TAK Server attivo, poi riapri iTAK.",
-          "Non trovi il pacchetto: nell'app File cerca nella cartella di Meshtastic o tra i download recenti.",
+          "iTAK resta su «Connecting»: torna su Meshtastic, controlla che il nodo sia collegato e il Server TAK verde, poi riapri iTAK.",
+          "C'è già un vecchio server Meshtastic in iTAK: eliminalo prima di caricare il pacchetto.",
         ],
       },
       {
         icon: "i-badge", code: "Obiettivo 5", title: "Identità",
-        brief: "Chi sei sulla mappa: nominativo, colore della squadra e ruolo.",
+        brief: "Chi sei sulla mappa: nominativo, colore della squadra e ruolo. Su iPhone vanno scritti a mano in iTAK.",
         tasks: [
           `In <b>iTAK</b>, nelle impostazioni, ${T.callsign}.`,
           T.colorRole,
-          `In Meshtastic, ${ui("Server TAK → Identità TAK")}: stesso colore e stesso ruolo, poi salva. Se resta su «Caricamento configurazione TAK dal nodo», salta questa voce: basta iTAK.`,
         ],
       },
       {
@@ -398,17 +506,13 @@ const PATHS = {
     objectives: [
       {
         icon: "i-pack", code: "Obiettivo 1", title: "Equipaggiamento",
-        brief: "Due app dal Play Store e un plugin da GitHub. Sono il tuo equipaggiamento radio.",
+        brief: "Due app dal Play Store. Sono il tuo equipaggiamento radio.",
         tasks: [
-          `<b>Meshtastic</b>: parla con il nodo via Bluetooth.<br><a class="store" href="${LINKS.meshtasticAndroid}" target="_blank" rel="noopener">Apri il Play Store</a>`,
+          `<b>Meshtastic</b> (versione 2.8 o successiva): parla con il nodo via Bluetooth e fa da ponte radio.<br><a class="store" href="${LINKS.meshtasticAndroid}" target="_blank" rel="noopener">Apri il Play Store</a>`,
           `<b>ATAK-CIV</b>: la mappa tattica della squadra.<br><a class="store" href="${LINKS.atak}" target="_blank" rel="noopener">Apri il Play Store</a>`,
-          "Annota la <b>versione di ATAK</b> installata: la vedi nelle informazioni dell'app ATAK, nelle impostazioni di Android.",
-          `<b>Plugin Meshtastic per ATAK</b>: non è sul Play Store. Dalla pagina ufficiale delle release scarica il file <b>APK</b> della versione che corrisponde al tuo ATAK.<br><a class="store" href="${LINKS.atakPlugin}" target="_blank" rel="noopener">Apri GitHub Releases</a>`,
         ],
-        alert: "<b>Scarica il plugin solo da github.com/meshtastic/ATAK-Plugin.</b> Un plugin costruito per una versione diversa di ATAK non si carica.",
         help: [
-          "La release più recente indica una versione di ATAK diversa dalla tua: aggiorna ATAK dal Play Store e riprova. Se non basta, chiedi a chi ti ha fornito il kit quale file usare.",
-          "Non trovi il file: nella pagina delle release apri l'elenco dei file allegati alla release più recente e tocca quello che termina con .apk.",
+          "Hai già il plugin Meshtastic in ATAK da una configurazione precedente: non serve più. Disattivalo dal menu dei plugin di ATAK, altrimenti le posizioni partono due volte.",
         ],
       },
       {
@@ -417,59 +521,43 @@ const PATHS = {
         tasks: [
           "Accendi il nodo e tienilo vicino al telefono.",
           "Apri <b>Meshtastic</b> e consenti i permessi <b>Bluetooth</b> e <b>Posizione</b>: servono per trovare il nodo.",
-          `Nella scheda ${ui("Connect")} scegli ${ui("Bluetooth")}, tocca ${ui("Scan for Bluetooth devices")} e poi il tuo nodo.`,
-          "Inserisci il <b>PIN</b> quando Android lo chiede: lo trovi sull'etichetta del kit o sul display del nodo. Lo stato diventa <b>verde</b> (collegato).",
-          `In ${ui("Settings → Channels")} ${T.channel}.`,
+          `Nella scheda ${ui("Connetti")} scegli ${ui("Bluetooth")} e tocca il tuo nodo.`,
+          "Inserisci il <b>PIN</b> che compare sul <b>display del nodo</b> quando Android lo chiede. Lo stato diventa <b>verde</b> (collegato).",
+          `In ${ui("Impostazioni → Canali")} ${T.channel}.`,
         ],
-        alert: "<b>Il nodo accetta un solo telefono alla volta.</b> Meshtastic resta attiva in background e si ricollega da sola all'ultimo nodo: è ciò che serve ad ATAK. Per usare un altro telefono o il configuratore, prima scollega il nodo dalla scheda Connect.",
+        alert: "<b>Il nodo accetta un solo telefono alla volta.</b> Meshtastic resta attiva in background e si ricollega da sola all'ultimo nodo: è ciò che serve ad ATAK.",
         help: [
           "Il nodo non compare: spegni e riaccendi il Bluetooth, controlla che la localizzazione sia attiva e che il nodo non sia collegato a un altro telefono.",
-          "Il PIN viene rifiutato: nelle impostazioni Bluetooth di Android elimina il nodo dai dispositivi associati, poi ricollegalo dall'app.",
+          "Il PIN viene rifiutato: nelle impostazioni Bluetooth di Android elimina il nodo dai dispositivi associati, poi ricollegalo dall'app. Succede sempre dopo un aggiornamento del nodo.",
           "Il nome del canale non è quello della tua squadra: non modificarlo. Contatta chi ti ha fornito il kit.",
         ],
       },
       {
-        icon: "i-plug", code: "Obiettivo 3", title: "Innesto del plugin",
-        brief: "Il plugin è il pezzo che collega ATAK alla radio. Lo installi dal file scaricato e lo carichi dentro ATAK.",
+        icon: "i-link", code: "Obiettivo 3", title: "Ponte radio",
+        brief: "ATAK non parla direttamente con il nodo: è l'app Meshtastic a fare da ponte. Basta un interruttore.",
         tasks: [
-          "Apri il file <b>APK</b> scaricato: dalla notifica del browser o dalla cartella Download.",
-          "Se Android blocca l'installazione, consenti al browser (o al gestore file) di <b>installare app sconosciute</b>, poi torna indietro e tocca <b>Installa</b>.",
-          "Apri <b>ATAK</b> e completa la configurazione iniziale, concedendo il permesso di usare la posizione.",
-          "Carica il plugin <b>Meshtastic</b>: conferma se ATAK propone di caricare il nuovo plugin, altrimenti caricalo dal menu dei plugin di ATAK.",
+          `In Meshtastic apri il menu ${ui("Server TAK")} e attiva il <b>Local TAK Server</b>.`,
+          `Il canale (Mesh Channel) è quello della squadra, indice ${T.index}: lascialo così.`,
         ],
-        alert: "<b>A installazione finita</b> puoi togliere di nuovo al browser il permesso di installare app sconosciute: il plugin resta installato.",
+        alert: "<b>Non serve esportare nulla</b>: il pacchetto per ATAK te lo dà questa pagina nel prossimo obiettivo.",
         help: [
-          "ATAK segnala il plugin come incompatibile o non lo carica: la versione del plugin non corrisponde a quella di ATAK. Torna all'Obiettivo 1 e scarica il file giusto.",
-          "Google Play Protect mostra un avviso: è normale per le app fuori dal Play Store. Procedi solo se il file viene da github.com/meshtastic.",
-          "Il plugin non compare in ATAK: chiudi ATAK del tutto e riaprilo.",
-        ],
-      },
-      {
-        icon: "i-link", code: "Obiettivo 4", title: "Ponte radio",
-        brief: "ATAK non parla direttamente con il nodo: il plugin passa attraverso l'app Meshtastic, che fa da ponte tra i due.",
-        tasks: [
-          "In <b>Meshtastic</b> il nodo risulta collegato (stato verde). Lascia l'app aperta in secondo piano.",
-          "In <b>ATAK</b> l'icona di Meshtastic in basso a destra è <b>verde</b>. Rossa significa che il plugin non raggiunge Meshtastic.",
-          `In ATAK apri ${ui("Settings → Tool Preferences → Specific Tool Preferences → Meshtastic Preferences")}.`,
-          `Controlla che ${ui("Meshtastic Channel Index")} sia ${T.index}.`,
-        ],
-        alert: "<b>Non modificare le altre impostazioni del plugin</b>, in particolare «Enable Extra Encryption»: se la attivi solo tu, la squadra non riceve più i tuoi messaggi.",
-        help: [
-          "L'icona è rossa: apri Meshtastic e ricollega il nodo. Il plugin si riaggancia da solo, senza riavviare ATAK.",
-          "L'icona non c'è: il plugin non è installato o non è caricato. Torna all'Obiettivo 3.",
+          "Non trovi il Server TAK: aggiorna Meshtastic dal Play Store, serve la versione 2.8 o successiva.",
           "Il collegamento cade dopo un po': Android sta chiudendo Meshtastic per risparmiare batteria. Escludi Meshtastic dall'ottimizzazione della batteria nelle impostazioni di Android.",
         ],
       },
       {
-        icon: "i-badge", code: "Obiettivo 5", title: "Identità",
-        brief: "Chi sei sulla mappa: nominativo, colore della squadra e ruolo. Li trasmette ATAK: in Meshtastic non devi impostare nulla.",
+        icon: "i-crate", code: "Obiettivo 4", title: "Ordini di missione",
+        brief: `Un pacchetto collega ATAK al ponte radio e imposta nominativo, colore e ruolo. È ${T.pkgName}: lo crea questa pagina, sul tuo telefono.`,
         tasks: [
-          `In <b>ATAK</b> apri ${ui("Settings → Callsign and Device Preferences")} e ${T.callsign}.`,
-          T.colorRole,
-          "Torna alla mappa: il tuo marker mostra il nuovo nominativo.",
+          `Tocca <b>Apri con l'app TAK</b> e scegli <b>ATAK</b>. Se ATAK non compare tra le app, usa <b>Scarica il file</b>.<br>${PKG}`,
+          `Se hai scaricato il file: in <b>ATAK</b> apri ${ui("☰ → Import → Local SD")} e seleziona il file nella cartella <b>Download</b>.`,
+          `In ATAK il server <b>OMNIS LoRa (Meshtastic)</b> è verde (${ui("☰ → Settings → Network Preferences → Server Connections")}).`,
+          KIT ? `Il tuo marker mostra il nominativo <b>${esc(KIT.n)}</b>, il colore <b>${TEAM_COLORS[KIT.c][0]}</b> e il ruolo <b>${ROLES[KIT.r]}</b>: li ha impostati il pacchetto.`
+              : `Imposta in ATAK nominativo, colore squadra e ruolo concordati con il team (${ui("☰ → Settings → Callsign and Device Preferences")}).`,
         ],
         help: [
-          "Non trovi colore e ruolo: cercali nelle impostazioni di ATAK, nella stessa sezione del nominativo.",
+          "Il server resta rosso: torna su Meshtastic, controlla che il nodo sia collegato e il Server TAK attivo, poi riapri ATAK.",
+          "C'è già un vecchio server Meshtastic in ATAK: eliminalo da Server Connections, poi ricarica il pacchetto.",
         ],
       },
       {
@@ -477,12 +565,11 @@ const PATHS = {
         brief: "Ultimo controllo: tu e la squadra sulla stessa mappa.",
         tasks: [
           "Sulla mappa di ATAK vedi il <b>tuo marker</b> nella tua posizione.",
-          "Vedi almeno un <b>compagno</b> (con il nodo acceso). Il plugin invia le posizioni a intervalli: possono servire alcuni minuti.",
-          "Invii un <b>messaggio di prova</b> nella chat di squadra di ATAK e lo ricevi dall'altra parte.",
+          "Vedi almeno un <b>compagno</b> (con il nodo acceso). Le posizioni possono impiegare un paio di minuti.",
+          "Invii un <b>messaggio di prova</b> nella chat di squadra di ATAK (All Chat Rooms) e lo ricevi dall'altra parte.",
         ],
         help: [
           "Non vedi i compagni: tutti i nodi della squadra devono avere lo stesso canale. Se un compagno ha una configurazione diversa non compare, senza errori: confrontate il nome del canale in Meshtastic.",
-          "Vedi due marker per lo stesso compagno: uno è la sua posizione da ATAK, l'altro è il suo nodo Meshtastic. È normale.",
           "Non vedi te stesso: controlla che ATAK abbia il permesso di usare la posizione.",
         ],
       },
@@ -576,6 +663,15 @@ document.addEventListener("click", (e) => {
     return window.scrollTo({ top: 0, behavior: "smooth" });
   }
   if (!current || !PATHS[current]) return;
+  const pkgBtn = e.target.closest(".pkg-share, .pkg-dl");
+  if (pkgBtn) {
+    e.preventDefault();
+    const msg = pkgBtn.closest(".task-text")?.querySelector(".pkg-msg");
+    const say = (t) => { if (msg) msg.textContent = t; };
+    if (pkgBtn.classList.contains("pkg-dl")) { say("File " + downloadPackage() + " salvato nei download."); return; }
+    sharePackage().then((r) => say(r === "shared" ? "Pacchetto inviato." : r === "aborted" ? "" : "Condivisione non disponibile: il file è stato salvato nei download."));
+    return;
+  }
   const p = progress(current);
   const obj = e.target.closest(".obj");
   if (!obj) return;
@@ -629,7 +725,7 @@ if (KIT) {
     try { await navigator.clipboard.writeText(KIT.keyB64); $("copy-key").textContent = "Copiata"; } catch { prompt("Chiave del canale:", KIT.keyB64); }
   };
   $("screen-choice").querySelector(".lead").textContent =
-    `Benvenuto, ${KIT.n}. Sei obiettivi ti separano dal primo contatto radio con la tua squadra. Indica il telefono che userai sul campo.`;
+    `Benvenuto, ${KIT.n}. Pochi obiettivi ti separano dal primo contatto radio con la tua squadra. Indica il telefono che userai sul campo.`;
 }
 // Il link punta a un'altra persona o a un altro dispositivo: ricarica per rileggere i dati.
 window.addEventListener("hashchange", () => location.reload());
