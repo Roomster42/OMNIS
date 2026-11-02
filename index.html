@@ -670,5 +670,28 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 })();
 </script>
 
+<!-- ===== MENU SVILUPPO (temporaneo): da eliminare prima della pubblicazione, dall'inizio alla fine di questo blocco ===== -->
+<style>
+.devmenu { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 60; font: 600 13px/1.2 var(--mono); }
+.devmenu summary { list-style: none; cursor: pointer; padding: 10px 14px; border-radius: 999px; background: var(--amber); color: var(--ink);
+  letter-spacing: .12em; text-transform: uppercase; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+.devmenu summary::-webkit-details-marker { display: none; }
+.devmenu[open] summary { border-radius: 12px 12px 0 0; }
+.devmenu nav { display: grid; min-width: 210px; background: var(--ink-2); border: 1px solid var(--ink-line); border-top: 0; border-radius: 0 0 12px 12px; overflow: hidden; }
+.devmenu a { display: block; padding: 12px 14px; color: var(--bone); text-decoration: none; border-top: 1px solid var(--ink-line); }
+.devmenu a:first-child { border-top: 0; }
+.devmenu a:hover, .devmenu a:focus-visible { background: var(--ink); color: var(--amber); }
+.devmenu a small { display: block; font-weight: 500; color: var(--slate); letter-spacing: .04em; margin-top: 2px; }
+@media print { .devmenu { display: none; } }
+</style>
+<details class="devmenu">
+  <summary>Pagine ▴</summary>
+  <nav aria-label="Pagine in sviluppo">
+    <a href="attivazione.html">Attivazione<small>guida del giocatore</small></a>
+    <a href="configurator.html">Configurator<small>programmazione nodi</small></a>
+    <a href="manuale.html">Manuale<small>generatore e manuale giocatore</small></a>
+  </nav>
+</details>
+<!-- ===== FINE MENU SVILUPPO ===== -->
 </body>
 </html>
