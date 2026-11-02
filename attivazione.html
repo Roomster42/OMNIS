@@ -552,12 +552,27 @@ const PATHS = {
           `Tocca <b>Apri con l'app TAK</b> e scegli <b>ATAK</b>. Se ATAK non compare tra le app, usa <b>Scarica il file</b>.<br>${PKG}`,
           `Se hai scaricato il file: in <b>ATAK</b> apri ${ui("☰ → Import → Local SD")} e seleziona il file nella cartella <b>Download</b>.`,
           `In ATAK il server <b>OMNIS LoRa (Meshtastic)</b> è verde (${ui("☰ → Settings → Network Preferences → Server Connections")}).`,
-          KIT ? `Il tuo marker mostra il nominativo <b>${esc(KIT.n)}</b>, il colore <b>${TEAM_COLORS[KIT.c][0]}</b> e il ruolo <b>${ROLES[KIT.r]}</b>: li ha impostati il pacchetto.`
-              : `Imposta in ATAK nominativo, colore squadra e ruolo concordati con il team (${ui("☰ → Settings → Callsign and Device Preferences")}).`,
         ],
         help: [
           "Il server resta rosso: torna su Meshtastic, controlla che il nodo sia collegato e il Server TAK attivo, poi riapri ATAK.",
           "C'è già un vecchio server Meshtastic in ATAK: eliminalo da Server Connections, poi ricarica il pacchetto.",
+        ],
+      },
+      {
+        icon: "i-badge", code: "Obiettivo 5", title: "Identità",
+        brief: KIT ? "Chi sei sulla mappa: nominativo, colore della squadra e ruolo. Su Android li ha già impostati il pacchetto: devi solo controllarli."
+                   : "Chi sei sulla mappa: nominativo, colore della squadra e ruolo.",
+        tasks: KIT ? [
+          `In <b>ATAK</b> apri ${ui("☰ → Settings → Callsign and Device Preferences")}: il nominativo è <b>${esc(KIT.n)}</b>.`,
+          `Il colore squadra è <b>${TEAM_COLORS[KIT.c][0]}</b> (${KIT.c}) e il ruolo è <b>${ROLES[KIT.r]}</b>.`,
+          "Torna alla mappa: il tuo marker mostra il tuo nominativo.",
+        ] : [
+          `In <b>ATAK</b> apri ${ui("☰ → Settings → Callsign and Device Preferences")} e ${T.callsign}.`,
+          T.colorRole,
+          "Torna alla mappa: il tuo marker mostra il nuovo nominativo.",
+        ],
+        help: [
+          "I valori non coincidono: correggili a mano nella stessa pagina. Il pacchetto non va ricaricato.",
         ],
       },
       {
